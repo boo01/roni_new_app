@@ -76,11 +76,17 @@
                     </div>
                 @endif
 
-                <div class="mt-8 flex flex-col sm:flex-row gap-3">
-                    <button type="button" class="btn-primary flex-1 cursor-not-allowed opacity-60" disabled title="კალათა იხსნება მალე">
+                <form method="POST" action="{{ route('cart.add', $product) }}" class="mt-8 flex flex-col sm:flex-row gap-3">
+                    @csrf
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit" class="btn-primary flex-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272" />
+                        </svg>
                         კალათაში დამატება
                     </button>
-                </div>
+                    <a href="{{ route('cart.show') }}" class="btn-outline">კალათის ნახვა</a>
+                </form>
 
                 <dl class="mt-10 border-t border-slate-100 pt-6 space-y-2 text-sm">
                     @if($product->category)
