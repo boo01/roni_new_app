@@ -1,3 +1,49 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@300;400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    html {
+        font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+        @apply bg-white text-ink min-h-dvh;
+        font-family: 'Noto Sans Georgian', system-ui, sans-serif;
+    }
+
+    *:focus-visible {
+        @apply outline-none ring-2 ring-ink ring-offset-2;
+    }
+}
+
+@layer components {
+    .btn {
+        @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition;
+    }
+    .btn-primary {
+        @apply btn bg-ink text-white hover:bg-ink-soft cursor-pointer;
+    }
+    .btn-outline {
+        @apply btn border border-slate-200 text-ink hover:bg-slate-50 cursor-pointer;
+    }
+    .btn-ghost {
+        @apply btn text-ink-soft hover:bg-slate-50 cursor-pointer;
+    }
+    .input {
+        @apply w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm placeholder:text-ink-faint focus:border-ink focus:ring-0 transition;
+    }
+    .label {
+        @apply text-sm font-medium text-ink-soft mb-1.5 block;
+    }
+    .card {
+        @apply rounded-xl border border-slate-200 bg-white shadow-card transition;
+    }
+    .card-hoverable {
+        @apply card hover:shadow-card-hover hover:-translate-y-0.5;
+    }
+}

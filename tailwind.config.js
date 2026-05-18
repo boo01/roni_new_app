@@ -7,12 +7,38 @@ export default {
         './storage/framework/views/*.php',
         './resources/**/*.blade.php',
         './resources/**/*.js',
-        './resources/**/*.vue',
+        './app/Livewire/**/*.php',
+        './app/View/Components/**/*.php',
     ],
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['"Noto Sans Georgian"', ...defaultTheme.fontFamily.sans],
+                display: ['"Noto Sans Georgian"', ...defaultTheme.fontFamily.sans],
+            },
+            colors: {
+                ink: {
+                    DEFAULT: '#0F172A',
+                    soft: '#334155',
+                    muted: '#64748B',
+                    faint: '#94A3B8',
+                },
+                accent: {
+                    DEFAULT: '#0F172A',
+                    fg: '#FFFFFF',
+                },
+                deal: {
+                    DEFAULT: '#047857',
+                    fg: '#FFFFFF',
+                    soft: '#ECFDF5',
+                },
+            },
+            boxShadow: {
+                card: '0 1px 2px 0 rgb(15 23 42 / 0.04)',
+                'card-hover': '0 8px 24px -8px rgb(15 23 42 / 0.12)',
+            },
+            transitionDuration: {
+                DEFAULT: '200ms',
             },
         },
     },

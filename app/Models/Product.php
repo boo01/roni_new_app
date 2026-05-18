@@ -64,4 +64,12 @@ class Product extends Model implements HasMedia
     {
         return $this->hasMany(ProductGroupPrice::class);
     }
+
+    /**
+     * @return array{retail: float, charged: float, has_discount: bool}
+     */
+    public function priceFor(?User $user): array
+    {
+        return app(\App\Services\Pricing::class)->priceFor($user, $this);
+    }
 }
