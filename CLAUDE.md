@@ -31,7 +31,7 @@ Rebuild of roni5.ge (Wix stationery/office-supply shop) as a custom Laravel app 
 - `php artisan db:seed` — idempotent seeder (roles, default group, admin user)
 - `php artisan test` — PHPUnit suite (not Pest)
 - `php artisan serve` — dev server on http://127.0.0.1:8000
-- `php artisan import:roni5` — (planned, Phase 6) scrape Wix site
+- `php artisan import:roni5 --b2c=path.csv [--b2b=path.csv] [--apply]` — CSV-based migration with code-based merge; see `app/Services/Roni5/Roni5Importer.php`
 
 ## Design language
 Clean modern minimal — white background, generous whitespace, subtle borders, sans-serif. Take cues from current roni5.ge layout (simple product grid, clear pricing, no decorative chrome) but execute with modern Tailwind components.
@@ -41,11 +41,11 @@ Full architecture + migration strategy: `/Users/user/.claude/plans/my-friend-cre
 
 ## Phase status
 - ✅ Phase 1 — Skeleton (migrations, models, Pricing service)
-- 🔄 Phase 2 — Filament admin resources
-- ⏳ Phase 3 — Storefront read path
-- ⏳ Phase 4 — Cart & checkout
-- ⏳ Phase 5 — Customer accounts
-- ⏳ Phase 6 — Wix migration & launch prep
+- ✅ Phase 2 — Filament admin resources (Category, Product, CustomerGroup, Order, User)
+- ✅ Phase 3 — Storefront read path (home / category / product, Noto Sans Georgian, B2B-aware price block)
+- ✅ Phase 4 — Cart & checkout (session cart, Livewire cart/checkout, dompdf invoice, mail notifications)
+- ✅ Phase 5 — Customer accounts (Breeze auth, /account, order history, order detail)
+- ✅ Phase 6 — Migration: `import:roni5` CSV-based importer with code-based merge (+ tests)
 
 ## Things to NOT do
 - Don't compute prices outside `Pricing` service.
