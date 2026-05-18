@@ -17,17 +17,75 @@
     </section>
 
     <section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-12">
-        @if($products->isNotEmpty())
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-                @foreach($products as $product)
-                    <x-storefront.product-card :product="$product" />
-                @endforeach
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
+
+            <aside class="lg:col-span-1 order-2 lg:order-1">
+                <form method="GET" action="{{ route('category.show', $category->slug) }}" class="space-y-5">
+
+                    @if($priceCeiling > 0)
+                        <div class="card p-4">
+                            <h3 class="text-sm font-semibold text-ink mb-3">ფასი (₾)</h3>
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="number" step="0.01" min="{{ floor($priceFloor) }}" name="price_min"
+                                       value="{{ $priceMin !== null ? $priceMin : '' }}"
+                                       placeholder="{{ number_format($priceFloor, 0) }}"
+                                       class="input py-1.5 text-sm" aria-label="მინ. ფასი">
+                                <input type="number" step="0.01" max="{{ ceil($priceCeiling) }}" name="price_max"
+                                       value="{{ $priceMax !== null ? $priceMax : '' }}"
+                                       placeholder="{{ number_format($priceCeiling, 0) }}"
+                                       class="input py-1.5 text-sm" aria-label="მაქს. ფასი">
+                            </div>
+                        </div>
+                    @endif
+
+                    @foreach($availableFilters as $attribute)
+                        @if($attribute->values->isEmpty())
+                            @continue
+                        @endif
+                        @php $selected = $selectedAttrs[$attribute->slug] ?? []; @endphp
+                        <div class="card p-4">
+                            <h3 class="text-sm font-semibold text-ink mb-3">{{ $attribute->name_ka }}</h3>
+                            <div class="space-y-2">
+                                @foreach($attribute->values as $value)
+                                    <label class="flex items-center gap-2 text-sm text-ink-soft cursor-pointer hover:text-ink">
+                                        <input type="checkbox"
+                                               name="attr[{{ $attribute->slug }}][]"
+                                               value="{{ $value->slug }}"
+                                               @checked(in_array($value->slug, $selected, true))
+                                               class="rounded border-slate-300 text-ink focus:ring-ink">
+                                        <span>{{ $value->value_ka }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endforeach
+
+                    <div class="flex gap-2">
+                        <button type="submit" class="btn-primary text-sm flex-1">გაფილტვრა</button>
+                        @if(request()->hasAny(['attr', 'price_min', 'price_max']))
+                            <a href="{{ route('category.show', $category->slug) }}" class="btn-ghost text-sm">გასუფთავება</a>
+                        @endif
+                    </div>
+                </form>
+            </aside>
+
+            <div class="lg:col-span-3 order-1 lg:order-2">
+                @if($products->isNotEmpty())
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6">
+                        @foreach($products as $product)
+                            <x-storefront.product-card :product="$product" />
+                        @endforeach
+                    </div>
+                    <div class="mt-10">{{ $products->links() }}</div>
+                @else
+                    <div class="card p-10 text-center text-ink-muted">
+                        <p>ფილტრით პროდუქცია ვერ მოიძებნა.</p>
+                        @if(request()->hasAny(['attr', 'price_min', 'price_max']))
+                            <a href="{{ route('category.show', $category->slug) }}" class="btn-outline mt-4">ფილტრის გასუფთავება</a>
+                        @endif
+                    </div>
+                @endif
             </div>
-            <div class="mt-10">
-                {{ $products->links() }}
-            </div>
-        @else
-            <div class="text-center py-16 text-ink-muted">ამ კატეგორიაში პროდუქცია ჯერ არ არის.</div>
-        @endif
+        </div>
     </section>
 </x-layouts.storefront>

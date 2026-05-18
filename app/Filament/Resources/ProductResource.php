@@ -20,6 +20,8 @@ class ProductResource extends Resource
 
     protected static ?string $navigationLabel = 'Products';
 
+    protected static ?string $navigationGroup = 'Catalog';
+
     protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
@@ -60,6 +62,17 @@ class ProductResource extends Resource
                         ->label('Description (Georgian)')
                         ->rows(4),
                 ]),
+
+                Forms\Components\Section::make('Filter attributes')->schema([
+                    Forms\Components\Select::make('attributeValues')
+                        ->label('Values (color, size, brand, etc.)')
+                        ->relationship('attributeValues', 'value_ka')
+                        ->multiple()
+                        ->searchable()
+                        ->preload()
+                        ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->attribute->name_ka}: {$record->value_ka}")
+                        ->helperText('Manage attribute definitions and their values from Catalog → Filters.'),
+                ])->collapsed(fn ($context) => $context === 'create'),
 
                 Forms\Components\Section::make('Images')->schema([
                     Forms\Components\SpatieMediaLibraryFileUpload::make('images')

@@ -72,6 +72,11 @@ class Product extends Model implements HasMedia
         return $this->hasMany(ProductGroupPrice::class);
     }
 
+    public function attributeValues(): BelongsToMany
+    {
+        return $this->belongsToMany(AttributeValue::class);
+    }
+
     /**
      * @return array{retail: float, charged: float, has_discount: bool}
      */
