@@ -34,7 +34,8 @@ Rebuild of roni5.ge (Wix stationery/office-supply shop) as a custom Laravel app 
 - `php artisan db:seed` — idempotent seeder (roles, default group, admin user)
 - `php artisan test` — PHPUnit suite (not Pest)
 - `php artisan serve` — dev server on http://127.0.0.1:8000
-- `php artisan import:roni5 --b2c=path.csv [--b2b=path.csv] [--apply]` — CSV-based migration with code-based merge; see `app/Services/Roni5/Roni5Importer.php`
+- `php artisan import:roni5 --b2c=path.csv [--b2b=path.csv] [--apply]` — CSV-based migration with code-based merge.
+- `php artisan import:roni5 --scrape-url=https://www.roni5.ge/category/X --category=our_slug [--apply] [--limit=N]` — live scrape mode (Browsershot + system Chrome, no Puppeteer Chromium download). One URL per `--scrape-url`; repeat for multiple categories.
 
 ## Design language
 Clean modern minimal — white background, generous whitespace, subtle borders, sans-serif. Take cues from current roni5.ge layout (simple product grid, clear pricing, no decorative chrome) but execute with modern Tailwind components.

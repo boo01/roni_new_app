@@ -4,8 +4,11 @@ namespace App\Services\Roni5;
 
 class CodeMatcher
 {
-    /** Caps-prefix style: NJ-012-128, SKU-AB-12, AB/123-X */
-    private const ALPHA_PATTERN = '/\b[A-Z]{2,4}[-\/][A-Z0-9][A-Z0-9\-\/]*\b/';
+    /** Caps-prefix with separator: NJ-012-128, SKU-AB-12, AB/123-X */
+    private const ALPHA_SEP_PATTERN = '/\b[A-Z]{2,4}[-\/][A-Z0-9][A-Z0-9\-\/]*\b/';
+
+    /** Caps letters followed by digits (no separator): XD504, A22110, WG60 */
+    private const ALPHA_DIGIT_PATTERN = '/\b[A-Z]{1,4}\d{2,6}\b/';
 
     /**
      * Standalone digit run of 3-6 characters that is NOT immediately followed
@@ -19,7 +22,10 @@ class CodeMatcher
      */
     public function extract(string $title): ?string
     {
-        if (preg_match(self::ALPHA_PATTERN, $title, $m)) {
+        if (preg_match(self::ALPHA_SEP_PATTERN, $title, $m)) {
+            return $m[0];
+        }
+        if (preg_match(self::ALPHA_DIGIT_PATTERN, $title, $m)) {
             return $m[0];
         }
         if (preg_match(self::NUMERIC_PATTERN, $title, $m)) {
