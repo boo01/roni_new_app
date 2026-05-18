@@ -1,10 +1,11 @@
 <?php
 
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'show'])->name('home');
@@ -18,20 +19,14 @@ Route::view('/checkout', 'pages.checkout')->name('checkout.show');
 Route::get('/orders/{order}/thank-you', [OrderController::class, 'thankYou'])->name('order.thank-you');
 Route::get('/orders/{order}/invoice.pdf', [OrderController::class, 'invoice'])->name('order.invoice');
 
-// Dev-only login helper for verifying B2B pricing in the browser before
-// real auth ships in Phase 5. Removed when /login is implemented.
-if (app()->environment('local')) {
-    Route::get('/dev-login/{user}', function (\App\Models\User $user) {
-        Auth::login($user);
-        return redirect()->route('home');
-    });
-}
+Route::redirect('/dashboard', '/account')->name('dashboard');
 
-// Auth stubs — replaced with full flow in Phase 5.
-Route::view('/login', 'pages.login-stub')->name('login');
-Route::post('/logout', function () {
-    Auth::logout();
-    request()->session()->invalidate();
-    request()->session()->regenerateToken();
-    return redirect()->route('home');
-})->name('logout');
+Route::middleware('auth')->group(function () {
+    Route::get('/account', [AccountController::class, 'show'])->name('account');
+    Route::get('/account/orders/{order}', [AccountController::class, 'order'])->name('account.order');
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+require __DIR__.'/auth.php';

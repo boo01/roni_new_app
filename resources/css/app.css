@@ -35,7 +35,7 @@
         @apply btn text-ink-soft hover:bg-slate-50 cursor-pointer;
     }
     .input {
-        @apply w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm placeholder:text-ink-faint focus:border-ink focus:ring-0 transition;
+        @apply w-full rounded-lg border-slate-200 px-3.5 py-2.5 text-sm placeholder:text-ink-faint focus:border-ink focus:ring-0 transition;
     }
     .label {
         @apply text-sm font-medium text-ink-soft mb-1.5 block;
