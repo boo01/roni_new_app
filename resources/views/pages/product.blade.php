@@ -8,11 +8,12 @@
     @endphp
 
     <section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-10">
+        @php $primaryCat = $product->primaryCategory(); @endphp
         <nav class="text-sm text-ink-muted mb-6" aria-label="Breadcrumb">
             <a href="{{ route('home') }}" class="hover:text-ink">მთავარი</a>
-            @if($product->category)
+            @if($primaryCat)
                 <span class="mx-1.5 text-ink-faint">/</span>
-                <a href="{{ route('category.show', $product->category->slug) }}" class="hover:text-ink">{{ $product->category->name_ka }}</a>
+                <a href="{{ route('category.show', $primaryCat->slug) }}" class="hover:text-ink">{{ $primaryCat->name_ka }}</a>
             @endif
             <span class="mx-1.5 text-ink-faint">/</span>
             <span class="text-ink">{{ $product->name_ka }}</span>
@@ -94,10 +95,14 @@
                 </form>
 
                 <dl class="mt-10 border-t border-slate-100 pt-6 space-y-2 text-sm">
-                    @if($product->category)
-                        <div class="flex justify-between">
-                            <dt class="text-ink-muted">კატეგორია</dt>
-                            <dd class="text-ink">{{ $product->category->name_ka }}</dd>
+                    @if($product->categories->isNotEmpty())
+                        <div class="flex justify-between gap-3">
+                            <dt class="text-ink-muted">{{ $product->categories->count() > 1 ? 'კატეგორიები' : 'კატეგორია' }}</dt>
+                            <dd class="text-ink text-right">
+                                @foreach($product->categories as $c)
+                                    <a href="{{ route('category.show', $c->slug) }}" class="hover:underline">{{ $c->name_ka }}</a>@if(!$loop->last), @endif
+                                @endforeach
+                            </dd>
                         </div>
                     @endif
                     <div class="flex justify-between">

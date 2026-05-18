@@ -19,7 +19,7 @@ class HomeController extends Controller
 
         $latestProducts = Product::query()
             ->where('is_active', true)
-            ->with(['category', 'media', 'groupPrices'])
+            ->with(['categories', 'media', 'groupPrices'])
             ->latest('id')
             ->take(8)
             ->get();

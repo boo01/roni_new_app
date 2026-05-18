@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -14,7 +14,6 @@ class Product extends Model implements HasMedia
     use InteractsWithMedia;
 
     protected $fillable = [
-        'category_id',
         'sku',
         'name_ka',
         'slug',
@@ -55,9 +54,17 @@ class Product extends Model implements HasMedia
             ->height(600);
     }
 
-    public function category(): BelongsTo
+    public function categories(): BelongsToMany
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsToMany(Category::class)
+            ->withPivot(['is_primary', 'sort_order'])
+            ->orderByPivot('is_primary', 'desc')
+            ->orderByPivot('sort_order');
+    }
+
+    public function primaryCategory(): ?Category
+    {
+        return $this->categories->firstWhere('pivot.is_primary', true) ?? $this->categories->first();
     }
 
     public function groupPrices(): HasMany

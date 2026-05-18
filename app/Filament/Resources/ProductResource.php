@@ -36,12 +36,14 @@ class ProductResource extends Resource
                             ->live(onBlur: true)
                             ->afterStateUpdated(fn ($state, $set, $get, $context) => $context === 'create' && ! $get('slug') && $set('slug', Slug::generate((string) $state))),
 
-                        Forms\Components\Select::make('category_id')
-                            ->label('Category')
-                            ->relationship('category', 'name_ka')
+                        Forms\Components\Select::make('categories')
+                            ->label('Categories')
+                            ->relationship('categories', 'name_ka')
+                            ->multiple()
                             ->searchable()
                             ->preload()
-                            ->required(),
+                            ->required()
+                            ->helperText('Assign one or more categories; the first becomes the primary (used for breadcrumb).'),
                     ]),
 
                     Forms\Components\TextInput::make('name_ka')
@@ -131,9 +133,11 @@ class ProductResource extends Resource
                     ->searchable()
                     ->fontFamily('mono'),
 
-                Tables\Columns\TextColumn::make('category.name_ka')
-                    ->label('Category')
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('categories.name_ka')
+                    ->label('Categories')
+                    ->badge()
+                    ->limit(20)
+                    ->listWithLineBreaks(),
 
                 Tables\Columns\TextColumn::make('retail_price')
                     ->label('Retail')
@@ -150,9 +154,10 @@ class ProductResource extends Resource
                     ->boolean(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('category_id')
-                    ->relationship('category', 'name_ka')
-                    ->label('Category'),
+                Tables\Filters\SelectFilter::make('categories')
+                    ->relationship('categories', 'name_ka')
+                    ->label('Category')
+                    ->multiple(),
 
                 Tables\Filters\TernaryFilter::make('is_active'),
             ])

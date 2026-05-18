@@ -111,10 +111,16 @@ class Roni5Importer
                             'slug' => Slug::generate($primary['title'], $code),
                             'description_ka' => $primary['description'] ?? null,
                             'retail_price' => (float) ($b2cRow['price'] ?? $b2bRow['price'] ?? 0),
-                            'category_id' => $defaultCategory?->id,
                             'is_active' => true,
                         ],
                     );
+
+                    if ($defaultCategory) {
+                        $product->categories()->syncWithoutDetaching([
+                            $defaultCategory->id => ['is_primary' => true, 'sort_order' => 0],
+                        ]);
+                    }
+
                     $stats['products_upserted']++;
 
                     if ($b2bRow && $defaultGroup) {

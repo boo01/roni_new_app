@@ -15,9 +15,9 @@ class CatalogController extends Controller
             ->firstOrFail();
 
         $products = Product::query()
-            ->where('category_id', $category->id)
+            ->whereHas('categories', fn ($q) => $q->where('categories.id', $category->id))
             ->where('is_active', true)
-            ->with(['media', 'groupPrices'])
+            ->with(['categories', 'media', 'groupPrices'])
             ->orderBy('sort_order')
             ->orderBy('name_ka')
             ->paginate(24);
@@ -30,7 +30,7 @@ class CatalogController extends Controller
         $product = Product::query()
             ->where('slug', $slug)
             ->where('is_active', true)
-            ->with(['category', 'media', 'groupPrices'])
+            ->with(['categories', 'media', 'groupPrices'])
             ->firstOrFail();
 
         return view('pages.product', compact('product'));
