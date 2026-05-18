@@ -1,8 +1,9 @@
 @php
-    $categories = \App\Models\Category::query()
-        ->where('is_active', true)
-        ->whereNull('parent_id')
-        ->orderBy('sort_order')
+    $audience = \App\Support\Audience::current();
+    $headerCategories = \App\Models\Category::query()
+        ->visibleTo($audience)
+        ->where('show_in_header', true)
+        ->orderBy('header_sort_order')
         ->orderBy('name_ka')
         ->get();
     $cartCount = app(\App\Services\Cart::class)->totalQuantity();
@@ -43,14 +44,16 @@
             </div>
         </div>
 
-        <nav class="-mx-4 px-4 pb-3 pt-1 flex items-center gap-1 overflow-x-auto" aria-label="Categories">
-            @foreach($categories as $category)
-                <a href="{{ route('category.show', $category->slug) }}"
-                   class="px-3 py-1.5 rounded-md text-sm font-medium text-ink-soft hover:text-ink hover:bg-slate-50 transition whitespace-nowrap shrink-0 {{ request()->routeIs('category.show') && request()->route('slug') === $category->slug ? 'text-ink bg-slate-50' : '' }}">
-                    {{ $category->name_ka }}
-                </a>
-            @endforeach
-        </nav>
+        @if($headerCategories->isNotEmpty())
+            <nav class="-mx-4 px-4 pb-3 pt-1 flex items-center gap-1 overflow-x-auto" aria-label="Categories">
+                @foreach($headerCategories as $category)
+                    <a href="{{ route('category.show', $category->slug) }}"
+                       class="px-3 py-1.5 rounded-md text-sm font-medium text-ink-soft hover:text-ink hover:bg-slate-50 transition whitespace-nowrap shrink-0 {{ request()->routeIs('category.show') && request()->route('slug') === $category->slug ? 'text-ink bg-slate-50' : '' }}">
+                        {{ $category->name_ka }}
+                    </a>
+                @endforeach
+            </nav>
+        @endif
     </div>
 </header>
 

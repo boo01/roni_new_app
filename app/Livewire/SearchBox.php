@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Product;
+use App\Support\Audience;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -34,7 +35,7 @@ class SearchBox extends Component
         $like = '%' . $q . '%';
 
         return Product::query()
-            ->where('is_active', true)
+            ->visibleTo(Audience::current())
             ->where(function ($w) use ($like) {
                 $w->where('name_ka', 'like', $like)
                     ->orWhere('sku', 'like', $like);

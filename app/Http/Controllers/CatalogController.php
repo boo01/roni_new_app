@@ -5,20 +5,23 @@ namespace App\Http\Controllers;
 use App\Models\Attribute;
 use App\Models\Category;
 use App\Models\Product;
+use App\Support\Audience;
 use Illuminate\Http\Request;
 
 class CatalogController extends Controller
 {
     public function category(Request $request, string $slug)
     {
+        $audience = Audience::current();
+
         $category = Category::query()
+            ->visibleTo($audience)
             ->where('slug', $slug)
-            ->where('is_active', true)
             ->firstOrFail();
 
         $baseQuery = Product::query()
-            ->whereHas('categories', fn ($q) => $q->where('categories.id', $category->id))
-            ->where('is_active', true);
+            ->visibleTo($audience)
+            ->whereHas('categories', fn ($q) => $q->where('categories.id', $category->id));
 
         $priceRange = (clone $baseQuery)->selectRaw('MIN(retail_price) as min, MAX(retail_price) as max')->first();
         $priceFloor = (float) ($priceRange->min ?? 0);
@@ -57,15 +60,13 @@ class CatalogController extends Controller
 
         $availableFilters = Attribute::query()
             ->where('is_filterable', true)
-            ->whereHas('values.products', fn ($q) => $q->whereHas(
-                'categories',
-                fn ($c) => $c->where('categories.id', $category->id)
-            ))
-            ->with(['values' => function ($q) use ($category) {
-                $q->whereHas(
-                    'products',
-                    fn ($p) => $p->whereHas('categories', fn ($c) => $c->where('categories.id', $category->id))
-                );
+            ->whereHas('values.products', fn ($q) => $q
+                ->visibleTo($audience)
+                ->whereHas('categories', fn ($c) => $c->where('categories.id', $category->id)))
+            ->with(['values' => function ($q) use ($category, $audience) {
+                $q->whereHas('products', fn ($p) => $p
+                    ->visibleTo($audience)
+                    ->whereHas('categories', fn ($c) => $c->where('categories.id', $category->id)));
             }])
             ->orderBy('sort_order')
             ->orderBy('name_ka')
@@ -85,9 +86,11 @@ class CatalogController extends Controller
 
     public function product(string $slug)
     {
+        $audience = Audience::current();
+
         $product = Product::query()
+            ->visibleTo($audience)
             ->where('slug', $slug)
-            ->where('is_active', true)
             ->with(['categories', 'media', 'groupPrices', 'attributeValues.attribute'])
             ->firstOrFail();
 

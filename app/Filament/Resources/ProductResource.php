@@ -114,6 +114,14 @@ class ProductResource extends Resource
                     Forms\Components\Toggle::make('is_active')
                         ->default(true),
 
+                    Forms\Components\Toggle::make('visible_to_retail')
+                        ->label('Visible to retail')
+                        ->default(true),
+
+                    Forms\Components\Toggle::make('visible_to_b2b')
+                        ->label('Visible to B2B')
+                        ->default(true),
+
                     Forms\Components\TextInput::make('sort_order')
                         ->numeric()
                         ->default(0),
@@ -165,6 +173,16 @@ class ProductResource extends Resource
                 Tables\Columns\IconColumn::make('is_active')
                     ->label('Active')
                     ->boolean(),
+
+                Tables\Columns\IconColumn::make('visible_to_retail')
+                    ->label('Retail')
+                    ->boolean()
+                    ->toggleable(),
+
+                Tables\Columns\IconColumn::make('visible_to_b2b')
+                    ->label('B2B')
+                    ->boolean()
+                    ->toggleable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('categories')

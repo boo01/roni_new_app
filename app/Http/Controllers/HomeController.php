@@ -4,21 +4,24 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Support\Audience;
 
 class HomeController extends Controller
 {
     public function show()
     {
+        $audience = Audience::current();
+
         $categories = Category::query()
+            ->visibleTo($audience)
             ->whereNull('parent_id')
-            ->where('is_active', true)
-            ->withCount(['products' => fn ($q) => $q->where('is_active', true)])
+            ->withCount(['products' => fn ($q) => $q->visibleTo($audience)])
             ->orderBy('sort_order')
             ->orderBy('name_ka')
             ->get();
 
         $latestProducts = Product::query()
-            ->where('is_active', true)
+            ->visibleTo($audience)
             ->with(['categories', 'media', 'groupPrices'])
             ->latest('id')
             ->take(8)

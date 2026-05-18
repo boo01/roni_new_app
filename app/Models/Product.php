@@ -23,6 +23,8 @@ class Product extends Model implements HasMedia
         'track_stock',
         'is_active',
         'sort_order',
+        'visible_to_retail',
+        'visible_to_b2b',
     ];
 
     protected function casts(): array
@@ -32,8 +34,24 @@ class Product extends Model implements HasMedia
             'stock_quantity' => 'integer',
             'track_stock' => 'boolean',
             'is_active' => 'boolean',
+            'visible_to_retail' => 'boolean',
+            'visible_to_b2b' => 'boolean',
             'sort_order' => 'integer',
         ];
+    }
+
+    /**
+     * Scope: product is visible AND at least one attached category is
+     * visible to the same audience. If a product's only category is
+     * hidden, the product is unreachable for that audience.
+     */
+    public function scopeVisibleTo($query, string $audience)
+    {
+        $col = 'visible_to_' . $audience;
+        return $query
+            ->where('is_active', true)
+            ->where($col, true)
+            ->whereHas('categories', fn ($c) => $c->where('is_active', true)->where($col, true));
     }
 
     public function registerMediaCollections(): void
