@@ -6,7 +6,8 @@ Rebuild of roni5.ge (Wix stationery/office-supply shop) as a custom Laravel app 
 - **Laravel 11** (PHP 8.4) — backend & routing
 - **Filament v3** — admin panel at `/admin`
 - **Livewire 3 + Blade + Tailwind 4 + Alpine** — public storefront
-- **SQLite** for local dev (production target: shared hosting MySQL, switch via `.env`)
+- **MySQL 8.4 via Docker** for local dev (`docker compose up -d`), `:memory:` SQLite for tests
+- Production target: shared hosting MySQL — same connection settings, change `.env`
 - **Spatie packages**: `laravel-permission`, `laravel-medialibrary`, `barryvdh/laravel-dompdf`
 
 ## Domain conventions
@@ -27,6 +28,8 @@ Rebuild of roni5.ge (Wix stationery/office-supply shop) as a custom Laravel app 
 - `b2c-customer` — assigned on public self-registration
 
 ## Commands
+- `docker compose up -d` — start MySQL on `127.0.0.1:3306` (db `roni5` / user `roni5` / pass `roni5`)
+- `docker compose down` — stop it (data persists in the `roni5-mysql-data` volume)
 - `php artisan migrate` — run migrations
 - `php artisan db:seed` — idempotent seeder (roles, default group, admin user)
 - `php artisan test` — PHPUnit suite (not Pest)
