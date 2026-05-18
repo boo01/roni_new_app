@@ -8,7 +8,7 @@
             <span class="text-ink">{{ $category->name_ka }}</span>
         </nav>
         <div class="flex items-end justify-between gap-4 flex-wrap">
-            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-ink">{{ $category->name_ka }}</h1>
+            <h1 class="font-mt text-2xl sm:text-3xl font-bold tracking-tight text-ink">@mt($category->name_ka)</h1>
             <p class="text-sm text-ink-muted">{{ $products->total() }} პროდუქცია</p>
         </div>
         @if($category->description_ka)

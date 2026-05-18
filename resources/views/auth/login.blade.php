@@ -3,7 +3,7 @@
 
     <section class="mx-auto max-w-md px-4 py-12">
         <div class="card p-6 sm:p-8">
-            <h1 class="text-2xl font-bold text-ink">შესვლა</h1>
+            <h1 class="font-mt text-2xl font-bold text-ink">@mt('შესვლა')</h1>
             <p class="mt-1 text-sm text-ink-muted">გაიარე ავტორიზაცია შენი ანგარიშით</p>
 
             @if (session('status'))

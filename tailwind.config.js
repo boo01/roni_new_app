@@ -15,6 +15,7 @@ export default {
             fontFamily: {
                 sans: ['"Noto Sans Georgian"', ...defaultTheme.fontFamily.sans],
                 display: ['"Noto Sans Georgian"', ...defaultTheme.fontFamily.sans],
+                mt: ['"Noto Sans Mtavruli"', '"Noto Sans Georgian"', ...defaultTheme.fontFamily.sans],
             },
             colors: {
                 ink: {

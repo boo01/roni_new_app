@@ -67,7 +67,10 @@ class ProductResource extends Resource
                         ->image()
                         ->imageEditor()
                         ->maxFiles(8)
+                        ->maxSize(20480)
+                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
                         ->panelLayout('grid')
+                        ->helperText('JPG, PNG, WEBP. ერთი ფაილი 20MB-მდე. ფოტოები ოპტიმიზდება ავტომატურად.')
                         ->columnSpanFull(),
                 ]),
             ])->columnSpan(2),
@@ -112,9 +115,10 @@ class ProductResource extends Resource
                 Tables\Columns\SpatieMediaLibraryImageColumn::make('image')
                     ->collection('images')
                     ->conversion('thumb')
+                    ->limit(1)
                     ->label('')
-                    ->size(40)
-                    ->circular(),
+                    ->size(48)
+                    ->square(),
 
                 Tables\Columns\TextColumn::make('name_ka')
                     ->label('Name')

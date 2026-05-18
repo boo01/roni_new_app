@@ -2,7 +2,7 @@
     <x-slot:title>მთავარი</x-slot:title>
 
     <section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-12 pb-8">
-        <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-ink">საკანცელარიო და საოფისე ნივთები</h1>
+        <h1 class="font-mt text-3xl sm:text-4xl font-bold tracking-tight text-ink">@mt('საკანცელარიო და საოფისე ნივთები')</h1>
         <p class="mt-3 max-w-2xl text-ink-muted">აღმოაჩინე საუკეთესო პროდუქცია ერთიანი ფასით კერძო პირებისთვის და სპეციალური ფასით კომპანიებისთვის.</p>
     </section>
 

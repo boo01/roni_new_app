@@ -8,7 +8,7 @@
             </svg>
         </div>
 
-        <h1 class="mt-6 text-2xl sm:text-3xl font-bold tracking-tight text-ink">გმადლობთ შეკვეთისთვის!</h1>
+        <h1 class="font-mt mt-6 text-2xl sm:text-3xl font-bold tracking-tight text-ink">@mt('გმადლობთ შეკვეთისთვის!')</h1>
         <p class="mt-3 text-ink-muted">თქვენი შეკვეთა <span class="font-mono text-ink">{{ $order->order_number }}</span> წარმატებით მიღებულია. მაღაზიის წარმომადგენელი მალე დაგიკავშირდებათ.</p>
 
         <div class="card mt-8 p-5 text-left">

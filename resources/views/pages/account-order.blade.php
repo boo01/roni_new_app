@@ -14,7 +14,7 @@
         <div class="flex items-start justify-between flex-wrap gap-3 mb-8">
             <div>
                 <p class="text-sm text-ink-muted">შეკვეთა</p>
-                <h1 class="text-2xl font-bold text-ink font-mono">{{ $order->order_number }}</h1>
+                <h1 class="font-mt text-2xl font-bold text-ink font-mono">{{ $order->order_number }}</h1>{{-- order_number is Latin/digits, no @mt needed --}}
                 <p class="text-xs text-ink-muted mt-1">{{ $order->created_at->format('d.m.Y H:i') }}</p>
             </div>
             <a href="{{ route('order.invoice', $order->order_number) }}" class="btn-outline text-sm" target="_blank" rel="noopener">ინვოისი (PDF)</a>

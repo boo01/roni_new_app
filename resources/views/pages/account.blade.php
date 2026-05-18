@@ -11,7 +11,7 @@
 
         <div class="flex items-end justify-between flex-wrap gap-4 mb-8">
             <div>
-                <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-ink">გამარჯობა, {{ $user->name }}</h1>
+                <h1 class="font-mt text-2xl sm:text-3xl font-bold tracking-tight text-ink">@mt('გამარჯობა, ' . $user->name)</h1>
                 <p class="text-ink-muted mt-1">
                     @if($user->isB2B())
                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-deal-soft text-deal mr-1">B2B</span>

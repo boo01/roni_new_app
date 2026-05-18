@@ -3,7 +3,7 @@
 
     <section class="mx-auto max-w-md px-4 py-12">
         <div class="card p-6 sm:p-8">
-            <h1 class="text-2xl font-bold text-ink">რეგისტრაცია</h1>
+            <h1 class="font-mt text-2xl font-bold text-ink">@mt('რეგისტრაცია')</h1>
             <p class="mt-1 text-sm text-ink-muted">შექმენი ანგარიში მარტივი შესყიდვისთვის. კომპანიის ანგარიშები იხსნება მაღაზიის ადმინისტრაციით.</p>
 
             <form method="POST" action="{{ route('register') }}" class="mt-6 space-y-4">

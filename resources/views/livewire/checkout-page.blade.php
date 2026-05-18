@@ -9,7 +9,7 @@
         <span class="text-ink">გადახდა</span>
     </nav>
 
-    <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-8">გადახდა</h1>
+    <h1 class="font-mt text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-8">@mt('გადახდა')</h1>
 
     <form wire:submit="submit" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div class="lg:col-span-2 space-y-6">

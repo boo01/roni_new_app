@@ -22,33 +22,38 @@
     <section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-16">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
             <div>
-                <div class="aspect-square card overflow-hidden bg-slate-50">
-                    @if($images->isNotEmpty())
-                        <img src="{{ $images->first()->getUrl('card') }}"
-                             alt="{{ $product->name_ka }}"
-                             class="h-full w-full object-cover">
-                    @else
-                        <div class="h-full w-full flex items-center justify-center text-ink-faint">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="size-16">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Z" />
-                            </svg>
+                @if($images->isNotEmpty())
+                    @php $cardUrls = $images->map(fn ($i) => $i->getUrl('card'))->values()->all(); @endphp
+                    <div x-data="{ active: 0, urls: @js($cardUrls) }">
+                        <div class="aspect-square card overflow-hidden bg-slate-50">
+                            <img :src="urls[active]" alt="{{ $product->name_ka }}"
+                                 class="h-full w-full object-cover transition-opacity duration-150">
                         </div>
-                    @endif
-                </div>
-                @if($images->count() > 1)
-                    <div class="mt-3 grid grid-cols-6 gap-2">
-                        @foreach($images as $img)
-                            <div class="aspect-square rounded-lg overflow-hidden border border-slate-200 bg-slate-50">
-                                <img src="{{ $img->getUrl('thumb') }}" alt="" class="h-full w-full object-cover">
+                        @if($images->count() > 1)
+                            <div class="mt-3 grid grid-cols-6 gap-2">
+                                @foreach($images as $i => $img)
+                                    <button type="button" @click="active = {{ $i }}"
+                                            :class="active === {{ $i }} ? 'ring-2 ring-ink ring-offset-1' : 'border border-slate-200 hover:border-slate-300'"
+                                            class="aspect-square rounded-lg overflow-hidden bg-slate-50 cursor-pointer transition"
+                                            aria-label="ფოტო {{ $i + 1 }}">
+                                        <img src="{{ $img->getUrl('thumb') }}" alt="" class="h-full w-full object-cover">
+                                    </button>
+                                @endforeach
                             </div>
-                        @endforeach
+                        @endif
+                    </div>
+                @else
+                    <div class="aspect-square card overflow-hidden bg-slate-50 flex items-center justify-center text-ink-faint">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="size-16">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Z" />
+                        </svg>
                     </div>
                 @endif
             </div>
 
             <div>
                 <p class="text-sm font-mono text-ink-faint mb-2">{{ $product->sku }}</p>
-                <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-ink">{{ $product->name_ka }}</h1>
+                <h1 class="font-mt text-2xl sm:text-3xl font-bold tracking-tight text-ink">@mt($product->name_ka)</h1>
 
                 <div class="mt-6 flex items-baseline gap-3">
                     @if($price['has_discount'])

@@ -7,7 +7,7 @@
         <span class="text-ink">კალათა</span>
     </nav>
 
-    <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-8">კალათა</h1>
+    <h1 class="font-mt text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-8">@mt('კალათა')</h1>
 
     @if(empty($summary['lines']))
         <div class="card p-10 text-center text-ink-muted">
