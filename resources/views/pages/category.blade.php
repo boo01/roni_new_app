@@ -20,10 +20,26 @@
         @endif
     </section>
 
-    <section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-12">
+    <section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-12" x-data="{ filtersOpen: false }">
+
+        <button type="button" @click="filtersOpen = !filtersOpen"
+                class="btn-outline w-full mb-4 justify-between lg:hidden">
+            <span class="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
+                </svg>
+                კატეგორიები და ფილტრი
+            </span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                 class="size-4 transition-transform" :class="filtersOpen && 'rotate-180'">
+                <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+            </svg>
+        </button>
+
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
 
-            <aside class="lg:col-span-1 order-2 lg:order-1 space-y-5">
+            <aside class="hidden lg:block lg:col-span-1 space-y-5"
+                   x-bind:class="{ '!block': filtersOpen }">
 
                 @if($navCategories->isNotEmpty())
                     <div class="card p-4">
@@ -105,7 +121,7 @@
                 </form>
             </aside>
 
-            <div class="lg:col-span-3 order-1 lg:order-2">
+            <div class="lg:col-span-3">
                 @if($products->isNotEmpty())
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6">
                         @foreach($products as $product)
