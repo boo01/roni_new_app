@@ -26,11 +26,17 @@ return new class extends Migration {
             ]);
         });
 
+        // Drop the FK first — on MySQL the composite index leads with
+        // category_id and backs the foreign key, so it can't be dropped while
+        // the constraint exists (errno 1553). Order: FK → index → column.
+        Schema::table('products', function (Blueprint $table) {
+            $table->dropForeign(['category_id']);
+        });
         Schema::table('products', function (Blueprint $table) {
             $table->dropIndex(['category_id', 'is_active', 'sort_order']);
         });
         Schema::table('products', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('category_id');
+            $table->dropColumn('category_id');
         });
     }
 

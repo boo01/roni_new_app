@@ -15,10 +15,18 @@ class HomeController extends Controller
         $categories = Category::query()
             ->visibleTo($audience)
             ->where('show_in_header', true)
-            ->with(['children' => fn ($q) => $q->visibleTo($audience)->orderBy('sort_order')->orderBy('name_ka')])
             ->orderBy('header_sort_order')
             ->orderBy('name_ka')
             ->get();
+
+        // Product count per category, including everything in its subtree.
+        foreach ($categories as $category) {
+            $ids = $category->descendantAndSelfIds();
+            $category->total_products = Product::query()
+                ->visibleTo($audience)
+                ->whereHas('categories', fn ($q) => $q->whereIn('categories.id', $ids))
+                ->count();
+        }
 
         $latestProducts = Product::query()
             ->visibleTo($audience)
