@@ -3,6 +3,7 @@
     $headerCategories = \App\Models\Category::query()
         ->visibleTo($audience)
         ->where('show_in_header', true)
+        ->with(['children' => fn ($q) => $q->visibleTo($audience)->orderBy('sort_order')->orderBy('name_ka')])
         ->orderBy('header_sort_order')
         ->orderBy('name_ka')
         ->get();
@@ -45,10 +46,46 @@
         </div>
 
         @if($headerCategories->isNotEmpty())
-            <nav class="-mx-4 px-4 pb-3 pt-1 flex items-center gap-1 overflow-x-auto" aria-label="Categories">
+            <nav class="-mx-4 px-4 pb-3 pt-1 hidden md:flex items-center gap-1" aria-label="Categories">
+                @foreach($headerCategories as $category)
+                    <div class="relative shrink-0" x-data="{ open: false }"
+                         @mouseenter="open = true" @mouseleave="open = false">
+                        <a href="{{ route('category.show', $category->slug) }}"
+                           @class([
+                               'flex items-center gap-1 px-3 py-1.5 rounded-md text-sm font-medium transition whitespace-nowrap',
+                               'text-ink bg-slate-50' => request()->routeIs('category.show') && request()->route('slug') === $category->slug,
+                               'text-ink-soft hover:text-ink hover:bg-slate-50' => ! (request()->routeIs('category.show') && request()->route('slug') === $category->slug),
+                           ])>
+                            {{ $category->name_ka }}
+                            @if($category->children->isNotEmpty())
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-3.5 text-ink-faint">
+                                    <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+                                </svg>
+                            @endif
+                        </a>
+
+                        @if($category->children->isNotEmpty())
+                            <div x-show="open" x-cloak x-transition.opacity.duration.150ms
+                                 class="absolute left-0 top-full z-40 pt-1 w-56">
+                                <div class="rounded-xl border border-slate-200 bg-white shadow-card-hover p-2 max-h-[70vh] overflow-y-auto">
+                                    @foreach($category->children as $child)
+                                        <a href="{{ route('category.show', $child->slug) }}"
+                                           class="block rounded-md px-3 py-1.5 text-sm text-ink-soft hover:bg-slate-50 hover:text-ink transition">
+                                            {{ $child->name_ka }}
+                                        </a>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                @endforeach
+            </nav>
+
+            {{-- Mobile: flat scrollable list of top-level categories --}}
+            <nav class="-mx-4 px-4 pb-3 pt-1 flex md:hidden items-center gap-1 overflow-x-auto" aria-label="Categories">
                 @foreach($headerCategories as $category)
                     <a href="{{ route('category.show', $category->slug) }}"
-                       class="px-3 py-1.5 rounded-md text-sm font-medium text-ink-soft hover:text-ink hover:bg-slate-50 transition whitespace-nowrap shrink-0 {{ request()->routeIs('category.show') && request()->route('slug') === $category->slug ? 'text-ink bg-slate-50' : '' }}">
+                       class="px-3 py-1.5 rounded-md text-sm font-medium text-ink-soft hover:text-ink hover:bg-slate-50 transition whitespace-nowrap shrink-0">
                         {{ $category->name_ka }}
                     </a>
                 @endforeach

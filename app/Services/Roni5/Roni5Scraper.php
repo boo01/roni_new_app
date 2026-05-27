@@ -126,6 +126,7 @@ class Roni5Scraper
     public function downloadImage(string $url): ?string
     {
         try {
+            $url = $this->normalizeImageUrl($url);
             $content = @file_get_contents($url);
             if ($content === false || strlen($content) < 200) {
                 return null;
@@ -139,6 +140,21 @@ class Roni5Scraper
         } catch (\Throwable) {
             return null;
         }
+    }
+
+    /**
+     * Wix's gallery widget hands us a transformed thumbnail URL
+     * (https://static.wixstatic.com/media/{file}.jpg/v1/fill/w_277,h_277,...).
+     * Strip the /v1/... segment so we download the high-res original
+     * the CDN serves at the base path.
+     */
+    private function normalizeImageUrl(string $url): string
+    {
+        return preg_replace(
+            '#(https?://static\.wixstatic\.com/media/[^/]+)/v1/.+$#',
+            '$1',
+            $url,
+        ) ?? $url;
     }
 
     private function guessExtension(string $url, string $content): string

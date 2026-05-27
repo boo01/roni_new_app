@@ -65,11 +65,13 @@ class Product extends Model implements HasMedia
         $this->addMediaConversion('thumb')
             ->width(300)
             ->height(300)
-            ->sharpen(10);
+            ->sharpen(10)
+            ->nonQueued();
 
         $this->addMediaConversion('card')
             ->width(600)
-            ->height(600);
+            ->height(600)
+            ->nonQueued();
     }
 
     public function categories(): BelongsToMany

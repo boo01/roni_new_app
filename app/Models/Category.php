@@ -56,4 +56,31 @@ class Category extends Model
         return $this->belongsToMany(Product::class)
             ->withPivot(['is_primary', 'sort_order']);
     }
+
+    /**
+     * IDs of this category plus every descendant, so a parent page can list
+     * products that live in its subcategories. Cheap: the tree is small and
+     * loaded once per request.
+     */
+    public function descendantAndSelfIds(): array
+    {
+        $ids = [$this->id];
+        foreach ($this->children as $child) {
+            $ids = array_merge($ids, $child->descendantAndSelfIds());
+        }
+        return $ids;
+    }
+
+    /** Ancestor chain from the top-level root down to (but excluding) this node. */
+    public function ancestors(): \Illuminate\Support\Collection
+    {
+        $chain = collect();
+        $node = $this->parent;
+        $guard = 0;
+        while ($node && $guard++ < 20) {
+            $chain->prepend($node);
+            $node = $node->parent;
+        }
+        return $chain;
+    }
 }

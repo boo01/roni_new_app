@@ -19,9 +19,14 @@ class CatalogController extends Controller
             ->where('slug', $slug)
             ->firstOrFail();
 
+        // Products from this category AND every visible descendant, so a
+        // top-level category page isn't near-empty when its items live in
+        // subcategories.
+        $categoryIds = $category->descendantAndSelfIds();
+
         $baseQuery = Product::query()
             ->visibleTo($audience)
-            ->whereHas('categories', fn ($q) => $q->where('categories.id', $category->id));
+            ->whereHas('categories', fn ($q) => $q->whereIn('categories.id', $categoryIds));
 
         $priceRange = (clone $baseQuery)->selectRaw('MIN(retail_price) as min, MAX(retail_price) as max')->first();
         $priceFloor = (float) ($priceRange->min ?? 0);
@@ -62,15 +67,30 @@ class CatalogController extends Controller
             ->where('is_filterable', true)
             ->whereHas('values.products', fn ($q) => $q
                 ->visibleTo($audience)
-                ->whereHas('categories', fn ($c) => $c->where('categories.id', $category->id)))
-            ->with(['values' => function ($q) use ($category, $audience) {
+                ->whereHas('categories', fn ($c) => $c->whereIn('categories.id', $categoryIds)))
+            ->with(['values' => function ($q) use ($categoryIds, $audience) {
                 $q->whereHas('products', fn ($p) => $p
                     ->visibleTo($audience)
-                    ->whereHas('categories', fn ($c) => $c->where('categories.id', $category->id)));
+                    ->whereHas('categories', fn ($c) => $c->whereIn('categories.id', $categoryIds)));
             }])
             ->orderBy('sort_order')
             ->orderBy('name_ka')
             ->get();
+
+        // Sidebar category navigation: list the children of the current
+        // category, or — if this is a leaf — the siblings under its parent.
+        $navParent = $category->children()->visibleTo($audience)->exists()
+            ? $category
+            : $category->parent;
+
+        $navCategories = $navParent
+            ? $navParent->children()
+                ->visibleTo($audience)
+                ->withCount(['products as products_count' => fn ($q) => $q->visibleTo($audience)])
+                ->orderBy('sort_order')
+                ->orderBy('name_ka')
+                ->get()
+            : collect();
 
         return view('pages.category', [
             'category' => $category,
@@ -81,6 +101,9 @@ class CatalogController extends Controller
             'priceCeiling' => $priceCeiling,
             'priceMin' => $priceMin,
             'priceMax' => $priceMax,
+            'ancestors' => $category->ancestors(),
+            'navParent' => $navParent,
+            'navCategories' => $navCategories,
         ]);
     }
 

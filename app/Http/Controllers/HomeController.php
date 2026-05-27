@@ -14,9 +14,9 @@ class HomeController extends Controller
 
         $categories = Category::query()
             ->visibleTo($audience)
-            ->whereNull('parent_id')
-            ->withCount(['products' => fn ($q) => $q->visibleTo($audience)])
-            ->orderBy('sort_order')
+            ->where('show_in_header', true)
+            ->with(['children' => fn ($q) => $q->visibleTo($audience)->orderBy('sort_order')->orderBy('name_ka')])
+            ->orderBy('header_sort_order')
             ->orderBy('name_ka')
             ->get();
 

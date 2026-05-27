@@ -24,20 +24,52 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
             <div>
                 @if($images->isNotEmpty())
-                    @php $cardUrls = $images->map(fn ($i) => $i->getUrl('card'))->values()->all(); @endphp
-                    <div x-data="{ active: 0, urls: @js($cardUrls) }">
-                        <div class="aspect-square card overflow-hidden bg-slate-50">
-                            <img :src="urls[active]" alt="{{ $product->name_ka }}"
-                                 class="h-full w-full object-cover transition-opacity duration-150">
+                    @php
+                        $gallery = $images->map(function ($i) {
+                            $dims = @getimagesize($i->getPath()) ?: [1200, 1200];
+                            return [
+                                'full' => $i->getUrl(),
+                                'card' => $i->getUrl('card'),
+                                'thumb' => $i->getUrl('thumb'),
+                                'width' => $dims[0],
+                                'height' => $dims[1],
+                            ];
+                        })->values()->all();
+                    @endphp
+                    <div class="pswp-gallery" x-data="{ active: 0 }">
+                        <div class="relative aspect-square card overflow-hidden bg-slate-50 cursor-zoom-in"
+                             @click="$root.querySelectorAll('a.pswp-link')[active].click()"
+                             role="button"
+                             aria-label="ფოტოს გადიდება">
+                            @foreach($gallery as $i => $img)
+                                <img src="{{ $img['card'] }}"
+                                     alt="{{ $product->name_ka }}"
+                                     x-show="active === {{ $i }}"
+                                     class="absolute inset-0 h-full w-full object-cover transition-opacity duration-150">
+                            @endforeach
+                            <div class="absolute bottom-2 right-2 size-9 rounded-full bg-white/85 text-ink flex items-center justify-center shadow-card backdrop-blur-sm pointer-events-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+                                </svg>
+                            </div>
                         </div>
-                        @if($images->count() > 1)
+
+                        @foreach($gallery as $img)
+                            <a class="pswp-link"
+                               href="{{ $img['full'] }}"
+                               data-pswp-width="{{ $img['width'] }}"
+                               data-pswp-height="{{ $img['height'] }}"
+                               hidden></a>
+                        @endforeach
+
+                        @if(count($gallery) > 1)
                             <div class="mt-3 grid grid-cols-6 gap-2">
-                                @foreach($images as $i => $img)
-                                    <button type="button" @click="active = {{ $i }}"
+                                @foreach($gallery as $i => $img)
+                                    <button type="button" @click.stop="active = {{ $i }}"
                                             :class="active === {{ $i }} ? 'ring-2 ring-ink ring-offset-1' : 'border border-slate-200 hover:border-slate-300'"
                                             class="aspect-square rounded-lg overflow-hidden bg-slate-50 cursor-pointer transition"
                                             aria-label="ფოტო {{ $i + 1 }}">
-                                        <img src="{{ $img->getUrl('thumb') }}" alt="" class="h-full w-full object-cover">
+                                        <img src="{{ $img['thumb'] }}" alt="" class="h-full w-full object-cover">
                                     </button>
                                 @endforeach
                             </div>

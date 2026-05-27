@@ -9,13 +9,34 @@
     @if($categories->isNotEmpty())
         <section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-8">
             <h2 class="text-lg font-semibold text-ink mb-4">კატეგორიები</h2>
-            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 @foreach($categories as $category)
-                    <a href="{{ route('category.show', $category->slug) }}"
-                       class="card-hoverable px-3 py-4 text-center text-sm font-medium text-ink-soft hover:text-ink">
-                        {{ $category->name_ka }}
-                        <span class="block mt-1 text-xs text-ink-faint font-normal">{{ $category->products_count }}</span>
-                    </a>
+                    <div class="card p-4">
+                        <a href="{{ route('category.show', $category->slug) }}"
+                           class="font-mt text-base font-semibold text-ink hover:text-deal transition">
+                            {{ $category->name_ka }}
+                        </a>
+                        @if($category->children->isNotEmpty())
+                            <ul class="mt-2 space-y-0.5">
+                                @foreach($category->children->take(6) as $child)
+                                    <li>
+                                        <a href="{{ route('category.show', $child->slug) }}"
+                                           class="block text-sm text-ink-muted hover:text-ink transition py-0.5">
+                                            {{ $child->name_ka }}
+                                        </a>
+                                    </li>
+                                @endforeach
+                                @if($category->children->count() > 6)
+                                    <li>
+                                        <a href="{{ route('category.show', $category->slug) }}"
+                                           class="block text-sm text-deal hover:underline py-0.5">
+                                            ყველა ({{ $category->children->count() }}) →
+                                        </a>
+                                    </li>
+                                @endif
+                            </ul>
+                        @endif
+                    </div>
                 @endforeach
             </div>
         </section>
