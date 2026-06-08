@@ -50,6 +50,33 @@ Full architecture + migration strategy: `/Users/user/.claude/plans/my-friend-cre
 - ✅ Phase 4 — Cart & checkout (session cart, Livewire cart/checkout, dompdf invoice, mail notifications)
 - ✅ Phase 5 — Customer accounts (Breeze auth, /account, order history, order detail)
 - ✅ Phase 6 — Migration: `import:roni5` CSV-based importer with code-based merge (+ tests)
+- ✅ Phase 7A — Mtavruli headings, image gallery + lightbox, image optimization
+- ✅ Phase 7B — Multi-category products + live search box
+- ✅ Phase 7C — Admin-defined attributes + storefront sidebar filters
+- ✅ Phase 7D — Live scrape mode (Browsershot + system Chrome, no Puppeteer dl)
+- ✅ Phase 8A — Per-audience visibility (retail/B2B) + header category whitelist
+- ✅ Phase 8B — Static pages CMS (About / Contact) with locations + Google Maps embed
+- ✅ Phase 9 — Real catalog seeded (Node crawler + Roni5CatalogSeeder); B2C/B2B price trees normalised (116 merges + 361 wholesale-only items); subcategory rendering everywhere (header dropdowns, mobile filter panel, category sidebar); PhotoSwipe lightbox; Wix CDN high-res URLs
+
+## Current data state (post Phase 9)
+- 574 products: 213 retail-visible + 361 B2B-only wholesale
+- 108 categories: 8 retail header roots + their 56 subs + 5 company roots + 38 company subs + 1 "ახალი"
+- 98 retail products carry a B2B price override (struck-through retail + company price)
+- B2B test user: `acme@example.com` / `password` (group `კომპანიები`)
+- Re-seed clean: `docker compose up -d && php artisan migrate:fresh --seed && php artisan db:seed --class=Roni5CatalogSeeder`
+  - 82MB scraped images live in `database/seeders/data/roni5-catalog/` (committed)
+
+## Known TODOs / open items
+- Drag-drop image upload in Filament product form sometimes doesn't persist on Save — to reproduce + fix
+- Confirm/polish the live search (header SearchBox livewire component) — verify it's reachable and the result UI matches the design
+- Admin UI to create/manage attributes + filter values (Phase 7C added the storefront filters; admin CRUD may need surfacing)
+- Multi-category assignment UX in Filament product form (model is many-to-many; confirm form uses CheckboxList or similar)
+- B2B header is busy (~13 items: 8 retail roots + 5 company roots). Consider hiding/renaming company roots via admin `show_in_header` toggle once the owner picks what to feature
+- Production: switch `MAIL_MAILER` from `log` to Gmail SMTP per the owner's setup; flip DB env to the Georgian host's MySQL
+- The 19 cases where company price ≥ retail price were skipped (no override) — log these for the owner to review manually
+
+## .env recent change
+The user renamed `APP_NAME` to `Roni` (was `Laravel`). Keep that.
 
 ## Things to NOT do
 - Don't compute prices outside `Pricing` service.
