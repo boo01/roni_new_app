@@ -19,18 +19,29 @@ class HomeController extends Controller
             ->orderBy('name_ka')
             ->get();
 
-        // Product count per category, including everything in its subtree.
+        // Product count + a representative image per category (incl. subtree).
         foreach ($categories as $category) {
             $ids = $category->descendantAndSelfIds();
+            $scope = fn ($q) => $q->whereIn('categories.id', $ids);
+
             $category->total_products = Product::query()
                 ->visibleTo($audience)
-                ->whereHas('categories', fn ($q) => $q->whereIn('categories.id', $ids))
+                ->whereHas('categories', $scope)
                 ->count();
+
+            $rep = Product::query()
+                ->visibleTo($audience)
+                ->whereHas('categories', $scope)
+                ->whereHas('media')
+                ->with('media')
+                ->latest('id')
+                ->first();
+            $category->image_url = $rep?->getFirstMediaUrl('images', 'thumb') ?: null;
         }
 
         $latestProducts = Product::query()
             ->visibleTo($audience)
-            ->with(['categories', 'media', 'groupPrices'])
+            ->with(['categories', 'media', 'groupPrices', 'attributeValues.attribute'])
             ->latest('id')
             ->take(8)
             ->get();

@@ -56,10 +56,10 @@ class CatalogController extends Controller
             });
         }
 
-        $products = $filtered
-            ->with(['categories', 'media', 'groupPrices'])
-            ->orderBy('sort_order')
-            ->orderBy('name_ka')
+        $sort = $this->normalizeSort($request->query('sort'));
+
+        $products = $this->applySort($filtered, $sort)
+            ->with(['categories', 'media', 'groupPrices', 'attributeValues.attribute'])
             ->paginate(24)
             ->withQueryString();
 
@@ -101,10 +101,49 @@ class CatalogController extends Controller
             'priceCeiling' => $priceCeiling,
             'priceMin' => $priceMin,
             'priceMax' => $priceMax,
+            'sort' => $sort,
             'ancestors' => $category->ancestors(),
             'navParent' => $navParent,
             'navCategories' => $navCategories,
         ]);
+    }
+
+    /** Whitelist the sort key so only known, safe options reach the query. */
+    private function normalizeSort(mixed $sort): string
+    {
+        $allowed = ['default', 'price_asc', 'price_desc', 'name_asc', 'name_desc'];
+
+        return in_array($sort, $allowed, true) ? $sort : 'default';
+    }
+
+    private function applySort($query, string $sort)
+    {
+        return match ($sort) {
+            'price_asc' => $query->orderBy('retail_price'),
+            'price_desc' => $query->orderByDesc('retail_price'),
+            'name_asc' => $query->orderBy('name_ka'),
+            'name_desc' => $query->orderByDesc('name_ka'),
+            default => $query->orderBy('sort_order')->orderBy('name_ka'),
+        };
+    }
+
+    public function categories()
+    {
+        $audience = Audience::current();
+
+        $roots = Category::query()
+            ->visibleTo($audience)
+            ->whereNull('parent_id')
+            ->with(['children' => fn ($q) => $q
+                ->visibleTo($audience)
+                ->withCount(['products as products_count' => fn ($p) => $p->visibleTo($audience)])
+                ->orderBy('sort_order')
+                ->orderBy('name_ka')])
+            ->orderBy('sort_order')
+            ->orderBy('name_ka')
+            ->get();
+
+        return view('pages.categories', compact('roots'));
     }
 
     public function product(string $slug)

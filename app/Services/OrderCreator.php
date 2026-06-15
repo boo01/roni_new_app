@@ -50,6 +50,7 @@ class OrderCreator
                     'product_id' => $line['product']->id,
                     'product_sku_snapshot' => $line['product']->sku,
                     'product_name_snapshot' => $line['product']->name_ka,
+                    'options_snapshot' => $line['options'] ?? [],
                     'unit_price_retail' => $line['unit_retail'],
                     'unit_price_charged' => $line['unit_charged'],
                     'quantity' => $line['quantity'],

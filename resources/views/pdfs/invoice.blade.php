@@ -1,89 +1,171 @@
+@php
+    // Inline the Georgian font as data URIs so dompdf embeds it reliably
+    // regardless of chroot / file-path resolution.
+    $fontRegular = base64_encode(file_get_contents(public_path('fonts/NotoSansGeorgian-Regular.ttf')));
+    $fontBold = base64_encode(file_get_contents(public_path('fonts/NotoSansGeorgian-Bold.ttf')));
+    $fmt = fn ($n) => number_format((float) $n, 2, '.', ' ');
+    $statusLabels = [
+        'new' => 'ახალი',
+        'contacted' => 'დაკავშირებული',
+        'paid' => 'გადახდილი',
+        'fulfilled' => 'შესრულებული',
+        'cancelled' => 'გაუქმებული',
+    ];
+    $statusLabel = $statusLabels[$order->status] ?? $order->status;
+@endphp
 <!DOCTYPE html>
-<html>
+<html lang="ka">
 <head>
     <meta charset="utf-8">
     <title>ინვოისი {{ $order->order_number }}</title>
     <style>
-        @page { margin: 32px 32px; }
-        body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #0F172A; }
-        h1 { font-size: 22px; margin: 0 0 4px; }
+        @font-face {
+            font-family: 'Geo';
+            font-weight: 400;
+            font-style: normal;
+            src: url('data:font/truetype;charset=utf-8;base64,{{ $fontRegular }}') format('truetype');
+        }
+        @font-face {
+            font-family: 'Geo';
+            font-weight: 700;
+            font-style: normal;
+            src: url('data:font/truetype;charset=utf-8;base64,{{ $fontBold }}') format('truetype');
+        }
+
+        @page { margin: 32px 36px; }
+        * { font-family: 'Geo', sans-serif; }
+        body { font-size: 11px; color: #0F172A; line-height: 1.5; margin: 0; }
         .muted { color: #64748B; }
-        .row { display: flex; justify-content: space-between; align-items: flex-start; }
-        .label { color: #64748B; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
-        table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-        th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #64748B; border-bottom: 1px solid #E2E8F0; padding: 8px 6px; font-weight: 500; }
-        td { padding: 10px 6px; border-bottom: 1px solid #F1F5F9; vertical-align: top; }
-        .num { text-align: right; }
+        .label { color: #64748B; font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; }
+        .r { text-align: right; }
+        .num { text-align: right; white-space: nowrap; }
+
+        /* Two-column blocks use tables — dompdf has no flexbox. */
+        .head { width: 100%; border-bottom: 2px solid #0F172A; padding-bottom: 14px; margin-bottom: 18px; }
+        .head td { vertical-align: top; }
+        .brand { font-size: 24px; font-weight: 700; letter-spacing: -0.01em; }
+        .inv-no { font-size: 14px; font-weight: 700; margin-top: 2px; }
+
+        .bill { width: 100%; margin-bottom: 18px; }
+        .bill td { vertical-align: top; }
+        .bill .name { font-weight: 700; }
+        .status-pill { display: inline-block; padding: 3px 10px; border-radius: 999px; background: #F1F5F9; font-size: 10px; color: #334155; }
+
+        table.items { width: 100%; border-collapse: collapse; }
+        table.items th { text-align: left; font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; color: #64748B; border-bottom: 1px solid #CBD5E1; padding: 0 8px 8px; font-weight: 700; }
+        table.items td { padding: 9px 8px; border-bottom: 1px solid #F1F5F9; vertical-align: top; }
+        .img-cell { width: 40px; padding-right: 0 !important; }
+        .thumb { width: 36px; height: 36px; border-radius: 5px; border: 1px solid #E2E8F0; }
+        .pname { font-weight: 700; }
+        .sku { font-size: 10px; color: #94A3B8; }
+        .opts { margin-top: 3px; font-size: 10px; color: #475569; }
+        .opts .ok { color: #94A3B8; }
         .strike { text-decoration: line-through; color: #94A3B8; font-size: 10px; }
         .deal { color: #047857; }
-        .totals { margin-top: 12px; width: 240px; margin-left: auto; }
-        .totals td { padding: 4px 0; border: 0; }
-        .totals .grand { font-weight: bold; font-size: 14px; border-top: 1px solid #E2E8F0; padding-top: 8px; }
-        .sku { font-family: DejaVu Sans Mono, monospace; font-size: 10px; color: #64748B; }
-        .header-bar { border-bottom: 2px solid #0F172A; padding-bottom: 12px; margin-bottom: 20px; }
-        .status-pill { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #F1F5F9; font-size: 10px; color: #334155; }
+
+        table.totals { width: 250px; margin-top: 14px; margin-left: auto; border-collapse: collapse; }
+        table.totals td { padding: 4px 0; }
+        table.totals .grand td { font-weight: 700; font-size: 14px; border-top: 1.5px solid #0F172A; padding-top: 9px; }
+
+        .notes { margin-top: 22px; padding: 12px 14px; background: #F8FAFC; border-radius: 8px; }
+        .foot { margin-top: 28px; text-align: center; font-size: 10px; color: #94A3B8; }
     </style>
 </head>
 <body>
-    <div class="header-bar row">
-        <div>
-            <h1>Roni5</h1>
-            <p class="muted" style="margin: 0;">საკანცელარიო და საოფისე ნივთები</p>
-        </div>
-        <div style="text-align: right;">
-            <p class="label">ინვოისი</p>
-            <p style="margin: 0; font-size: 14px; font-weight: bold;">{{ $order->order_number }}</p>
-            <p class="muted" style="margin: 4px 0 0;">{{ $order->created_at->format('d.m.Y H:i') }}</p>
-        </div>
-    </div>
+    <table class="head">
+        <tr>
+            <td>
+                <div class="brand">Roni<span style="color:#047857;">5</span></div>
+                <div class="muted" style="margin-top:2px;">საკანცელარიო და საოფისე ნივთები</div>
+            </td>
+            <td class="r">
+                <div class="label">ინვოისი</div>
+                <div class="inv-no">{{ $order->order_number }}</div>
+                <div class="muted" style="margin-top:2px;">{{ $order->created_at->format('d.m.Y H:i') }}</div>
+            </td>
+        </tr>
+    </table>
 
-    <div class="row" style="margin-bottom: 16px;">
-        <div style="width: 48%;">
-            <p class="label" style="margin-bottom: 4px;">გადასახდელია</p>
-            <p style="margin: 0; font-weight: bold;">{{ $order->customer_snapshot['name'] }}</p>
-            @if(!empty($order->customer_snapshot['company_name']))
-                <p style="margin: 2px 0;">{{ $order->customer_snapshot['company_name'] }}</p>
-            @endif
-            @if(!empty($order->customer_snapshot['company_tax_id']))
-                <p style="margin: 2px 0;" class="muted">საგ. კოდი: {{ $order->customer_snapshot['company_tax_id'] }}</p>
-            @endif
-            @if(!empty($order->customer_snapshot['address']))
-                <p style="margin: 2px 0;">{{ $order->customer_snapshot['address'] }}</p>
-            @endif
-            <p style="margin: 2px 0;" class="muted">{{ $order->customer_snapshot['email'] }} · {{ $order->customer_snapshot['phone'] ?? '' }}</p>
-        </div>
-        <div style="width: 48%; text-align: right;">
-            <p class="label" style="margin-bottom: 4px;">სტატუსი</p>
-            <span class="status-pill">{{ $order->status }}</span>
-        </div>
-    </div>
+    <table class="bill">
+        <tr>
+            <td style="width:60%;">
+                <div class="label" style="margin-bottom:5px;">გადასახდელია</div>
+                <div class="name">{{ $order->customer_snapshot['name'] ?? '' }}</div>
+                @if(!empty($order->customer_snapshot['company_name']))
+                    <div>{{ $order->customer_snapshot['company_name'] }}</div>
+                @endif
+                @if(!empty($order->customer_snapshot['company_tax_id']))
+                    <div class="muted">საგ. კოდი: {{ $order->customer_snapshot['company_tax_id'] }}</div>
+                @endif
+                @if(!empty($order->customer_snapshot['address']))
+                    <div>{{ $order->customer_snapshot['address'] }}</div>
+                @endif
+                <div class="muted">
+                    {{ $order->customer_snapshot['email'] ?? '' }}@if(!empty($order->customer_snapshot['phone'])) · {{ $order->customer_snapshot['phone'] }}@endif
+                </div>
+            </td>
+            <td class="r" style="width:40%;">
+                <div class="label" style="margin-bottom:5px;">სტატუსი</div>
+                <span class="status-pill">{{ $statusLabel }}</span>
+            </td>
+        </tr>
+    </table>
 
-    <table>
+    <table class="items">
         <thead>
             <tr>
+                <th class="img-cell"></th>
                 <th>პროდუქცია</th>
-                <th class="num" style="width: 60px;">რაოდენ.</th>
-                <th class="num" style="width: 100px;">ერთეული</th>
-                <th class="num" style="width: 100px;">ჯამი</th>
+                <th class="num" style="width:48px;">რაოდ.</th>
+                <th class="num" style="width:92px;">ერთეული</th>
+                <th class="num" style="width:92px;">ჯამი</th>
             </tr>
         </thead>
         <tbody>
             @foreach($order->items as $item)
+                @php
+                    // Inline the thumbnail as a data URI (dompdf embeds these
+                    // reliably; bare file paths can fail chroot resolution).
+                    $imgData = null;
+                    if ($media = $item->product?->getFirstMedia('images')) {
+                        foreach ([$media->getPath('thumb'), $media->getPath()] as $path) {
+                            if ($path && is_file($path)) {
+                                $mime = @mime_content_type($path) ?: 'image/jpeg';
+                                if (in_array($mime, ['image/jpeg', 'image/png', 'image/gif'], true)) {
+                                    $imgData = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($path));
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                @endphp
                 <tr>
+                    <td class="img-cell">
+                        @if($imgData)
+                            <img src="{{ $imgData }}" class="thumb" alt="">
+                        @endif
+                    </td>
                     <td>
-                        {{ $item->product_name_snapshot }}<br>
-                        <span class="sku">{{ $item->product_sku_snapshot }}</span>
+                        <div class="pname">{{ $item->product_name_snapshot }}</div>
+                        <div class="sku">{{ $item->product_sku_snapshot }}</div>
+                        @if(!empty($item->options_snapshot))
+                            <div class="opts">
+                                @foreach($item->options_snapshot as $opt)
+                                    <span class="ok">{{ $opt['attribute_name'] ?? '' }}:</span> {{ $opt['value_name'] ?? '' }}@if(!$loop->last) &nbsp;·&nbsp; @endif
+                                @endforeach
+                            </div>
+                        @endif
                     </td>
                     <td class="num">{{ $item->quantity }}</td>
                     <td class="num">
                         @if($item->unit_price_charged < $item->unit_price_retail)
-                            <span class="strike">₾{{ number_format($item->unit_price_retail, 2) }}</span><br>
-                            <span class="deal">₾{{ number_format($item->unit_price_charged, 2) }}</span>
+                            <span class="strike">₾{{ $fmt($item->unit_price_retail) }}</span><br>
+                            <span class="deal">₾{{ $fmt($item->unit_price_charged) }}</span>
                         @else
-                            ₾{{ number_format($item->unit_price_charged, 2) }}
+                            ₾{{ $fmt($item->unit_price_charged) }}
                         @endif
                     </td>
-                    <td class="num">₾{{ number_format($item->line_total, 2) }}</td>
+                    <td class="num">₾{{ $fmt($item->line_total) }}</td>
                 </tr>
             @endforeach
         </tbody>
@@ -93,28 +175,28 @@
         @if($order->discount_total > 0)
             <tr>
                 <td class="muted">საცალო ჯამი</td>
-                <td class="num strike">₾{{ number_format($order->subtotal_retail, 2) }}</td>
+                <td class="num strike">₾{{ $fmt($order->subtotal_retail) }}</td>
             </tr>
             <tr>
                 <td class="muted">B2B ფასდაკლება</td>
-                <td class="num deal">− ₾{{ number_format($order->discount_total, 2) }}</td>
+                <td class="num deal">− ₾{{ $fmt($order->discount_total) }}</td>
             </tr>
         @endif
         <tr class="grand">
             <td>სულ</td>
-            <td class="num">₾{{ number_format($order->total, 2) }}</td>
+            <td class="num">₾{{ $fmt($order->total) }}</td>
         </tr>
     </table>
 
     @if($order->notes)
-        <div style="margin-top: 24px;">
-            <p class="label">შენიშვნა</p>
-            <p>{{ $order->notes }}</p>
+        <div class="notes">
+            <div class="label" style="margin-bottom:3px;">შენიშვნა</div>
+            <div>{{ $order->notes }}</div>
         </div>
     @endif
 
-    <p class="muted" style="margin-top: 32px; text-align: center; font-size: 10px;">
+    <div class="foot">
         გმადლობთ ნდობისთვის! ფასები მითითებულია ლარში (₾).
-    </p>
+    </div>
 </body>
 </html>

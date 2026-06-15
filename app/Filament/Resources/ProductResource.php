@@ -18,20 +18,36 @@ class ProductResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-cube';
 
-    protected static ?string $navigationLabel = 'Products';
-
-    protected static ?string $navigationGroup = 'Catalog';
-
     protected static ?int $navigationSort = 2;
+
+    public static function getNavigationLabel(): string
+    {
+        return __('Products');
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Catalog');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('product');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('products');
+    }
 
     public static function form(Form $form): Form
     {
         return $form->schema([
             Forms\Components\Group::make()->schema([
-                Forms\Components\Section::make('Basics')->schema([
+                Forms\Components\Section::make(__('Basics'))->schema([
                     Forms\Components\Grid::make(2)->schema([
                         Forms\Components\TextInput::make('sku')
-                            ->label('SKU / Product code')
+                            ->label(__('SKU / Product code'))
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(255)
@@ -39,42 +55,42 @@ class ProductResource extends Resource
                             ->afterStateUpdated(fn ($state, $set, $get, $context) => $context === 'create' && ! $get('slug') && $set('slug', Slug::generate((string) $state))),
 
                         Forms\Components\Select::make('categories')
-                            ->label('Categories')
+                            ->label(__('Categories'))
                             ->relationship('categories', 'name_ka')
                             ->multiple()
                             ->searchable()
                             ->preload()
                             ->required()
-                            ->helperText('Assign one or more categories; the first becomes the primary (used for breadcrumb).'),
+                            ->helperText(__('Assign one or more categories; the first becomes the primary (used for breadcrumb).')),
                     ]),
 
                     Forms\Components\TextInput::make('name_ka')
-                        ->label('Name (Georgian)')
+                        ->label(__('Name (Georgian)'))
                         ->required()
                         ->maxLength(255),
 
                     Forms\Components\TextInput::make('slug')
                         ->required()
                         ->unique(ignoreRecord: true)
-                        ->helperText('URL identifier. Auto-derived from SKU; edit if needed.'),
+                        ->helperText(__('URL identifier. Auto-derived from SKU; edit if needed.')),
 
                     Forms\Components\Textarea::make('description_ka')
-                        ->label('Description (Georgian)')
+                        ->label(__('Description (Georgian)'))
                         ->rows(4),
                 ]),
 
-                Forms\Components\Section::make('Filter attributes')->schema([
+                Forms\Components\Section::make(__('Filter attributes'))->schema([
                     Forms\Components\Select::make('attributeValues')
-                        ->label('Values (color, size, brand, etc.)')
+                        ->label(__('Values (color, size, brand, etc.)'))
                         ->relationship('attributeValues', 'value_ka')
                         ->multiple()
                         ->searchable()
                         ->preload()
                         ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->attribute->name_ka}: {$record->value_ka}")
-                        ->helperText('Manage attribute definitions and their values from Catalog → Filters.'),
+                        ->helperText(__('Manage attribute definitions and their values from Catalog → Filters.')),
                 ])->collapsed(fn ($context) => $context === 'create'),
 
-                Forms\Components\Section::make('Images')->schema([
+                Forms\Components\Section::make(__('Images'))->schema([
                     Forms\Components\SpatieMediaLibraryFileUpload::make('images')
                         ->collection('images')
                         ->multiple()
@@ -85,44 +101,48 @@ class ProductResource extends Resource
                         ->maxSize(20480)
                         ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
                         ->panelLayout('grid')
-                        ->helperText('JPG, PNG, WEBP. ერთი ფაილი 20MB-მდე. ფოტოები ოპტიმიზდება ავტომატურად.')
+                        ->helperText(__('JPG, PNG, WEBP. One file up to 20MB. Images are optimised automatically.'))
                         ->columnSpanFull(),
                 ]),
             ])->columnSpan(2),
 
             Forms\Components\Group::make()->schema([
-                Forms\Components\Section::make('Pricing')->schema([
+                Forms\Components\Section::make(__('Pricing'))->schema([
                     Forms\Components\TextInput::make('retail_price')
-                        ->label('Retail price (GEL)')
+                        ->label(__('Retail price (GEL)'))
                         ->required()
                         ->numeric()
                         ->minValue(0)
                         ->prefix('₾'),
                 ]),
 
-                Forms\Components\Section::make('Stock')->schema([
+                Forms\Components\Section::make(__('Stock'))->schema([
                     Forms\Components\Toggle::make('track_stock')
+                        ->label(__('Track stock'))
                         ->default(false),
 
                     Forms\Components\TextInput::make('stock_quantity')
+                        ->label(__('Stock quantity'))
                         ->numeric()
                         ->minValue(0)
                         ->default(0),
                 ]),
 
-                Forms\Components\Section::make('Visibility')->schema([
+                Forms\Components\Section::make(__('Visibility'))->schema([
                     Forms\Components\Toggle::make('is_active')
+                        ->label(__('Active'))
                         ->default(true),
 
                     Forms\Components\Toggle::make('visible_to_retail')
-                        ->label('Visible to retail')
+                        ->label(__('Visible to retail'))
                         ->default(true),
 
                     Forms\Components\Toggle::make('visible_to_b2b')
-                        ->label('Visible to B2B')
+                        ->label(__('Visible to B2B'))
                         ->default(true),
 
                     Forms\Components\TextInput::make('sort_order')
+                        ->label(__('Sort order'))
                         ->numeric()
                         ->default(0),
                 ]),
@@ -144,53 +164,54 @@ class ProductResource extends Resource
                     ->square(),
 
                 Tables\Columns\TextColumn::make('name_ka')
-                    ->label('Name')
+                    ->label(__('Name'))
                     ->searchable()
                     ->sortable()
                     ->wrap(),
 
                 Tables\Columns\TextColumn::make('sku')
-                    ->label('SKU')
+                    ->label(__('SKU'))
                     ->searchable()
                     ->fontFamily('mono'),
 
                 Tables\Columns\TextColumn::make('categories.name_ka')
-                    ->label('Categories')
+                    ->label(__('Categories'))
                     ->badge()
                     ->limit(20)
                     ->listWithLineBreaks(),
 
                 Tables\Columns\TextColumn::make('retail_price')
-                    ->label('Retail')
+                    ->label(__('Retail'))
                     ->money('GEL')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('stock_quantity')
-                    ->label('Stock')
+                    ->label(__('Stock'))
                     ->sortable()
                     ->toggleable(),
 
                 Tables\Columns\IconColumn::make('is_active')
-                    ->label('Active')
+                    ->label(__('Active'))
                     ->boolean(),
 
                 Tables\Columns\IconColumn::make('visible_to_retail')
-                    ->label('Retail')
+                    ->label(__('Retail'))
                     ->boolean()
                     ->toggleable(),
 
                 Tables\Columns\IconColumn::make('visible_to_b2b')
-                    ->label('B2B')
+                    ->label(__('B2B'))
                     ->boolean()
                     ->toggleable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('categories')
                     ->relationship('categories', 'name_ka')
-                    ->label('Category')
+                    ->label(__('Category'))
                     ->multiple(),
 
-                Tables\Filters\TernaryFilter::make('is_active'),
+                Tables\Filters\TernaryFilter::make('is_active')
+                    ->label(__('Active')),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

@@ -18,27 +18,48 @@ class OrderResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
 
-    protected static ?string $navigationLabel = 'Orders';
-
     protected static ?int $navigationSort = 3;
+
+    public static function getNavigationLabel(): string
+    {
+        return __('Orders');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('order');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('orders');
+    }
+
+    /** @return array<string, string> */
+    public static function statusOptions(): array
+    {
+        return [
+            Order::STATUS_NEW => __('New'),
+            Order::STATUS_CONTACTED => __('Contacted'),
+            Order::STATUS_PAID => __('Paid'),
+            Order::STATUS_FULFILLED => __('Fulfilled'),
+            Order::STATUS_CANCELLED => __('Cancelled'),
+        ];
+    }
 
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Section::make('Status')->schema([
+            Forms\Components\Section::make(__('Status'))->schema([
                 Forms\Components\Select::make('status')
-                    ->options([
-                        Order::STATUS_NEW => 'New',
-                        Order::STATUS_CONTACTED => 'Contacted',
-                        Order::STATUS_PAID => 'Paid',
-                        Order::STATUS_FULFILLED => 'Fulfilled',
-                        Order::STATUS_CANCELLED => 'Cancelled',
-                    ])
+                    ->label(__('Status'))
+                    ->options(self::statusOptions())
                     ->required(),
 
                 Forms\Components\Textarea::make('admin_notes')
+                    ->label(__('Admin notes'))
                     ->rows(4)
-                    ->helperText('Internal notes — never shown to the customer.'),
+                    ->helperText(__('Internal notes — never shown to the customer.')),
             ]),
         ]);
     }
@@ -46,31 +67,37 @@ class OrderResource extends Resource
     public static function infolist(Infolist $infolist): Infolist
     {
         return $infolist->schema([
-            Infolists\Components\Section::make('Order')->schema([
+            Infolists\Components\Section::make(__('Order'))->schema([
                 Infolists\Components\Grid::make(3)->schema([
-                    Infolists\Components\TextEntry::make('order_number')->label('Number'),
-                    Infolists\Components\TextEntry::make('status')->badge(),
-                    Infolists\Components\TextEntry::make('created_at')->dateTime()->label('Placed at'),
+                    Infolists\Components\TextEntry::make('order_number')->label(__('Number')),
+                    Infolists\Components\TextEntry::make('status')
+                        ->label(__('Status'))
+                        ->badge()
+                        ->formatStateUsing(fn ($state) => self::statusOptions()[$state] ?? $state),
+                    Infolists\Components\TextEntry::make('created_at')->dateTime()->label(__('Placed at')),
                 ]),
             ]),
 
-            Infolists\Components\Section::make('Customer')->schema([
+            Infolists\Components\Section::make(__('Customer'))->schema([
                 Infolists\Components\KeyValueEntry::make('customer_snapshot')
+                    ->label(__('Customer details'))
+                    ->keyLabel(__('Field'))
+                    ->valueLabel(__('Value'))
                     ->columnSpanFull(),
             ]),
 
-            Infolists\Components\Section::make('Totals')->schema([
+            Infolists\Components\Section::make(__('Totals'))->schema([
                 Infolists\Components\Grid::make(4)->schema([
-                    Infolists\Components\TextEntry::make('subtotal_retail')->money('GEL')->label('Retail subtotal'),
-                    Infolists\Components\TextEntry::make('discount_total')->money('GEL'),
-                    Infolists\Components\TextEntry::make('subtotal_charged')->money('GEL')->label('Charged subtotal'),
-                    Infolists\Components\TextEntry::make('total')->money('GEL')->weight('bold'),
+                    Infolists\Components\TextEntry::make('subtotal_retail')->money('GEL')->label(__('Retail subtotal')),
+                    Infolists\Components\TextEntry::make('discount_total')->money('GEL')->label(__('Discount total')),
+                    Infolists\Components\TextEntry::make('subtotal_charged')->money('GEL')->label(__('Charged subtotal')),
+                    Infolists\Components\TextEntry::make('total')->money('GEL')->weight('bold')->label(__('Total')),
                 ]),
             ]),
 
-            Infolists\Components\Section::make('Notes')->schema([
-                Infolists\Components\TextEntry::make('notes')->label('Customer notes')->placeholder('—'),
-                Infolists\Components\TextEntry::make('admin_notes')->placeholder('—'),
+            Infolists\Components\Section::make(__('Notes'))->schema([
+                Infolists\Components\TextEntry::make('notes')->label(__('Customer notes'))->placeholder('—'),
+                Infolists\Components\TextEntry::make('admin_notes')->label(__('Admin notes'))->placeholder('—'),
             ])->collapsible(),
         ]);
     }
@@ -81,26 +108,29 @@ class OrderResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('order_number')
-                    ->label('Number')
+                    ->label(__('Number'))
                     ->searchable()
                     ->fontFamily('mono'),
 
                 Tables\Columns\TextColumn::make('user.name')
-                    ->label('Customer')
-                    ->placeholder('Guest')
+                    ->label(__('Customer'))
+                    ->placeholder(__('Guest'))
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('customerGroup.name')
-                    ->label('Group')
+                    ->label(__('Group'))
                     ->badge()
-                    ->placeholder('Retail'),
+                    ->placeholder(__('Retail')),
 
                 Tables\Columns\TextColumn::make('total')
+                    ->label(__('Total'))
                     ->money('GEL')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('status')
+                    ->label(__('Status'))
                     ->badge()
+                    ->formatStateUsing(fn ($state) => self::statusOptions()[$state] ?? $state)
                     ->color(fn ($state) => match ($state) {
                         Order::STATUS_NEW => 'warning',
                         Order::STATUS_CONTACTED => 'info',
@@ -112,18 +142,14 @@ class OrderResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('Created at'))
                     ->dateTime('Y-m-d H:i')
                     ->sortable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
-                    ->options([
-                        Order::STATUS_NEW => 'New',
-                        Order::STATUS_CONTACTED => 'Contacted',
-                        Order::STATUS_PAID => 'Paid',
-                        Order::STATUS_FULFILLED => 'Fulfilled',
-                        Order::STATUS_CANCELLED => 'Cancelled',
-                    ]),
+                    ->label(__('Status'))
+                    ->options(self::statusOptions()),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

@@ -12,6 +12,7 @@ class OrderItem extends Model
         'product_id',
         'product_sku_snapshot',
         'product_name_snapshot',
+        'options_snapshot',
         'unit_price_retail',
         'unit_price_charged',
         'quantity',
@@ -21,6 +22,7 @@ class OrderItem extends Model
     protected function casts(): array
     {
         return [
+            'options_snapshot' => 'array',
             'unit_price_retail' => 'decimal:2',
             'unit_price_charged' => 'decimal:2',
             'quantity' => 'integer',

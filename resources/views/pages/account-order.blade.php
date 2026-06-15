@@ -26,6 +26,7 @@
                     <div class="flex-1">
                         <p class="text-sm font-medium text-ink">{{ $item->product_name_snapshot }}</p>
                         <p class="text-xs text-ink-faint font-mono">{{ $item->product_sku_snapshot }}</p>
+                        <x-storefront.option-tags :options="$item->options_snapshot ?? []" />
                     </div>
                     <div class="text-right">
                         <p class="text-sm text-ink">

@@ -7,30 +7,34 @@ use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class GroupPricesRelationManager extends RelationManager
 {
     protected static string $relationship = 'groupPrices';
 
-    protected static ?string $title = 'Per-group price overrides';
+    public static function getTitle(Model $ownerRecord, string $pageClass): string
+    {
+        return __('Per-group price overrides');
+    }
 
     public function form(Form $form): Form
     {
         return $form->schema([
             Forms\Components\Select::make('customer_group_id')
-                ->label('Customer group')
+                ->label(__('Customer group'))
                 ->relationship('customerGroup', 'name')
                 ->required()
                 ->searchable()
                 ->preload(),
 
             Forms\Components\TextInput::make('price')
-                ->label('Price (GEL)')
+                ->label(__('Price (GEL)'))
                 ->required()
                 ->numeric()
                 ->minValue(0)
                 ->prefix('₾')
-                ->helperText('Replaces the group\'s percent discount for this product only.'),
+                ->helperText(__("Replaces the group's percent discount for this product only.")),
         ]);
     }
 
@@ -38,16 +42,19 @@ class GroupPricesRelationManager extends RelationManager
     {
         return $table
             ->recordTitleAttribute('id')
+            ->modelLabel(__('price override'))
+            ->pluralModelLabel(__('price overrides'))
             ->columns([
                 Tables\Columns\TextColumn::make('customerGroup.name')
-                    ->label('Group'),
+                    ->label(__('Group')),
 
                 Tables\Columns\TextColumn::make('price')
+                    ->label(__('Price'))
                     ->money('GEL'),
 
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime('Y-m-d H:i')
-                    ->label('Updated'),
+                    ->label(__('Updated')),
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make(),

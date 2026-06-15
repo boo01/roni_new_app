@@ -17,18 +17,34 @@ class CategoryResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-folder';
 
-    protected static ?string $navigationLabel = 'Categories';
-
-    protected static ?string $navigationGroup = 'Catalog';
-
     protected static ?int $navigationSort = 1;
+
+    public static function getNavigationLabel(): string
+    {
+        return __('Categories');
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Catalog');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('category');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('categories');
+    }
 
     public static function form(Form $form): Form
     {
         return $form->schema([
             Forms\Components\Section::make()->schema([
                 Forms\Components\TextInput::make('name_ka')
-                    ->label('Name (Georgian)')
+                    ->label(__('Name (Georgian)'))
                     ->required()
                     ->maxLength(255)
                     ->live(onBlur: true)
@@ -38,50 +54,52 @@ class CategoryResource extends Resource
                     ->required()
                     ->maxLength(255)
                     ->unique(ignoreRecord: true)
-                    ->helperText('URL identifier. Auto-generated from name; edit if needed.'),
+                    ->helperText(__('URL identifier. Auto-generated from name; edit if needed.')),
 
                 Forms\Components\Select::make('parent_id')
-                    ->label('Parent category')
+                    ->label(__('Parent category'))
                     ->relationship('parent', 'name_ka', fn ($query, $record) => $record ? $query->where('id', '!=', $record->id) : $query)
                     ->searchable()
                     ->preload()
-                    ->placeholder('(top-level)'),
+                    ->placeholder(__('(top-level)')),
 
                 Forms\Components\Textarea::make('description_ka')
-                    ->label('Description (Georgian)')
+                    ->label(__('Description (Georgian)'))
                     ->rows(3)
                     ->columnSpanFull(),
 
                 Forms\Components\Grid::make(2)->schema([
                     Forms\Components\TextInput::make('sort_order')
+                        ->label(__('Sort order'))
                         ->numeric()
                         ->default(0),
 
                     Forms\Components\Toggle::make('is_active')
+                        ->label(__('Active'))
                         ->default(true),
                 ]),
             ]),
 
-            Forms\Components\Section::make('Visibility')->schema([
+            Forms\Components\Section::make(__('Visibility'))->schema([
                 Forms\Components\Grid::make(2)->schema([
                     Forms\Components\Toggle::make('visible_to_retail')
-                        ->label('Visible to retail customers')
+                        ->label(__('Visible to retail customers'))
                         ->default(true)
-                        ->helperText('Hide from guests + B2C; products inside also become unreachable for them.'),
+                        ->helperText(__('Hide from guests + B2C; products inside also become unreachable for them.')),
                     Forms\Components\Toggle::make('visible_to_b2b')
-                        ->label('Visible to B2B customers')
+                        ->label(__('Visible to B2B customers'))
                         ->default(true)
-                        ->helperText('Hide from logged-in B2B; products inside also become unreachable for them.'),
+                        ->helperText(__('Hide from logged-in B2B; products inside also become unreachable for them.')),
                 ]),
             ]),
 
-            Forms\Components\Section::make('Header navigation')->schema([
+            Forms\Components\Section::make(__('Header navigation'))->schema([
                 Forms\Components\Toggle::make('show_in_header')
-                    ->label('Show in header menu')
+                    ->label(__('Show in header menu'))
                     ->default(false)
-                    ->helperText('Only categories with this on appear in the top nav. Others are still browsable via search and direct URL.'),
+                    ->helperText(__('Only categories with this on appear in the top nav. Others are still browsable via search and direct URL.')),
                 Forms\Components\TextInput::make('header_sort_order')
-                    ->label('Header order')
+                    ->label(__('Header order'))
                     ->numeric()
                     ->default(0),
             ]),
@@ -94,45 +112,46 @@ class CategoryResource extends Resource
             ->defaultSort('sort_order')
             ->columns([
                 Tables\Columns\TextColumn::make('name_ka')
-                    ->label('Name')
+                    ->label(__('Name'))
                     ->searchable()
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('parent.name_ka')
-                    ->label('Parent')
+                    ->label(__('Parent'))
                     ->placeholder('—')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('products_count')
-                    ->label('Products')
+                    ->label(__('Products'))
                     ->counts('products')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('sort_order')
-                    ->label('Order')
+                    ->label(__('Sort order'))
                     ->sortable(),
 
                 Tables\Columns\IconColumn::make('is_active')
-                    ->label('Active')
+                    ->label(__('Active'))
                     ->boolean(),
 
                 Tables\Columns\IconColumn::make('show_in_header')
-                    ->label('Header')
+                    ->label(__('Header'))
                     ->boolean()
                     ->toggleable(),
 
                 Tables\Columns\IconColumn::make('visible_to_retail')
-                    ->label('Retail')
+                    ->label(__('Retail'))
                     ->boolean()
                     ->toggleable(),
 
                 Tables\Columns\IconColumn::make('visible_to_b2b')
-                    ->label('B2B')
+                    ->label(__('B2B'))
                     ->boolean()
                     ->toggleable(),
             ])
             ->filters([
-                Tables\Filters\TernaryFilter::make('is_active'),
+                Tables\Filters\TernaryFilter::make('is_active')
+                    ->label(__('Active')),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

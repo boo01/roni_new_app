@@ -57,6 +57,13 @@ Full architecture + migration strategy: `/Users/user/.claude/plans/my-friend-cre
 - ✅ Phase 8A — Per-audience visibility (retail/B2B) + header category whitelist
 - ✅ Phase 8B — Static pages CMS (About / Contact) with locations + Google Maps embed
 - ✅ Phase 9 — Real catalog seeded (Node crawler + Roni5CatalogSeeder); B2C/B2B price trees normalised (116 merges + 361 wholesale-only items); subcategory rendering everywhere (header dropdowns, mobile filter panel, category sidebar); PhotoSwipe lightbox; Wix CDN high-res URLs
+- ✅ Phase 10 — Customer-selectable product options + storefront polish:
+  - **Options reuse the attribute system**: `attributes.is_selectable` + `attributes.is_required` flags (toggles in Filament `AttributeResource`). A product's assigned values of a selectable attribute become the choices shown on the product page. `Product::selectableOptionGroups()` / `hasRequiredOptions()`.
+  - **Cart carries options**: session cart is now keyed by `product_id + sorted value_ids` (`Cart::add($id,$qty,$options)`, `setQuantity($lineKey,…)`, `remove($lineKey)`). Same product + different options = separate lines. `order_items.options_snapshot` (JSON) snapshots the choice; rendered in cart, checkout, account order, and invoice via `<x-storefront.option-tags>`.
+  - **Quick add-to-cart in grids**: `product-card` has a hover button (always visible on mobile) → AJAX POST to `cart.add` (JSON when `expectsJson()`), toast + reactive header badge (`cart-updated` window event). Products with required options link to the product page instead. `form[data-cart-add]` handler lives in `resources/js/app.js`.
+  - **Invoice overhaul**: embeds Noto Sans Georgian (see Fonts note); table-based layout (dompdf has no flexbox); first product image + chosen options per line.
+  - **Home category carousel** (scroll-snap + arrows, representative images) + `/categories` "see all" page (`CatalogController::categories`).
+  - **Category sorting**: `?sort=price_asc|price_desc|name_asc|name_desc` (whitelisted in `CatalogController::normalizeSort/applySort`); dropdown preserves active filters.
 
 ## Current data state (post Phase 9)
 - 574 products: 213 retail-visible + 361 B2B-only wholesale
@@ -66,7 +73,13 @@ Full architecture + migration strategy: `/Users/user/.claude/plans/my-friend-cre
 - Re-seed clean: `docker compose up -d && php artisan migrate:fresh --seed && php artisan db:seed --class=Roni5CatalogSeeder`
   - 82MB scraped images live in `database/seeders/data/roni5-catalog/` (committed)
 
+## PDF / Georgian fonts (invoice)
+- dompdf's default DejaVu Sans has **no Georgian glyphs** → garbled text. Fix: `public/fonts/NotoSansGeorgian-{Regular,Bold}.ttf` (static instances cut from the variable font via `fonttools varLib.instancer`), embedded in `pdfs/invoice.blade.php` as **base64 `data:` URIs** inside `@font-face`. Bare file-path `url()` and local `<img src>` paths fail dompdf chroot resolution — **inline as data URIs** instead (product thumbnails in the invoice do the same).
+- Only weights 400 + 700 exist. Use `font-weight: 400` or `700` only in the invoice CSS — `500`/`600` fall back to a non-Georgian font and render as `?`.
+- These fonts cover Georgian + Latin + digits + ₾ (U+20BE).
+
 ## Known TODOs / open items
+- The "ფერი" (color) attribute is set selectable+required and attached to the test product `01000000` (SKU) as a demo of options. Owner manages attributes/options in admin → Catalog → Filters.
 - Drag-drop image upload in Filament product form sometimes doesn't persist on Save — to reproduce + fix
 - Confirm/polish the live search (header SearchBox livewire component) — verify it's reachable and the result UI matches the design
 - Admin UI to create/manage attributes + filter values (Phase 7C added the storefront filters; admin CRUD may need surfacing)

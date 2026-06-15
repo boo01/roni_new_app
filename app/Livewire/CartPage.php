@@ -7,31 +7,22 @@ use Livewire\Component;
 
 class CartPage extends Component
 {
-    public array $quantities = [];
-
-    public function mount(Cart $cart): void
+    public function updateQuantity(Cart $cart, string $lineKey, int $quantity): void
     {
-        $this->quantities = $cart->raw();
+        $cart->setQuantity($lineKey, max(0, $quantity));
+        $this->dispatch('cart-updated', count: $cart->totalQuantity());
     }
 
-    public function update(Cart $cart, int $productId, int $quantity): void
+    public function remove(Cart $cart, string $lineKey): void
     {
-        $cart->set($productId, max(0, $quantity));
-        $this->quantities = $cart->raw();
-    }
-
-    public function remove(Cart $cart, int $productId): void
-    {
-        $cart->remove($productId);
-        $this->quantities = $cart->raw();
+        $cart->remove($lineKey);
+        $this->dispatch('cart-updated', count: $cart->totalQuantity());
     }
 
     public function render(Cart $cart)
     {
-        $summary = $cart->summary(auth()->user());
-
         return view('livewire.cart-page', [
-            'summary' => $summary,
+            'summary' => $cart->summary(auth()->user()),
         ]);
     }
 }

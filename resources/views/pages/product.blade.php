@@ -114,16 +114,56 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('cart.add', $product) }}" class="mt-8 flex flex-col sm:flex-row gap-3">
+                @php $optionGroups = $product->selectableOptionGroups(); @endphp
+                <form method="POST" action="{{ route('cart.add', $product) }}" data-cart-add class="mt-8 space-y-6">
                     @csrf
                     <input type="hidden" name="quantity" value="1">
-                    <button type="submit" class="btn-primary flex-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272" />
-                        </svg>
-                        კალათაში დამატება
-                    </button>
-                    <a href="{{ route('cart.show') }}" class="btn-outline">კალათის ნახვა</a>
+
+                    @if($optionGroups->isNotEmpty())
+                        <div class="space-y-5">
+                            @foreach($optionGroups as $group)
+                                @php $attr = $group['attribute']; @endphp
+                                <fieldset class="cart-option" data-option-required="{{ $attr->is_required ? '1' : '0' }}" data-option-label="{{ $attr->name_ka }}">
+                                    <legend class="text-sm font-medium text-ink mb-2">
+                                        {{ $attr->name_ka }}
+                                        @if($attr->is_required)
+                                            <span class="text-red-500" title="სავალდებულო">*</span>
+                                        @else
+                                            <span class="text-ink-faint font-normal">(არასავალდებულო)</span>
+                                        @endif
+                                    </legend>
+                                    <div class="flex flex-wrap gap-2">
+                                        @foreach($group['values'] as $val)
+                                            <label class="cursor-pointer">
+                                                <input type="radio" name="options[{{ $attr->id }}]" value="{{ $val->id }}"
+                                                       @checked(old('options.'.$attr->id) == $val->id)
+                                                       class="peer sr-only">
+                                                <span class="block px-3.5 py-1.5 rounded-full border border-slate-300 text-sm text-ink-soft transition select-none
+                                                             hover:border-ink
+                                                             peer-checked:border-ink peer-checked:bg-ink peer-checked:text-white
+                                                             peer-focus-visible:ring-2 peer-focus-visible:ring-ink peer-focus-visible:ring-offset-1">
+                                                    {{ $val->value_ka }}
+                                                </span>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                    @error('options.'.$attr->id)
+                                        <p class="text-xs text-red-600 mt-1.5">{{ $message }}</p>
+                                    @enderror
+                                </fieldset>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <button type="submit" class="btn-primary flex-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272" />
+                            </svg>
+                            კალათაში დამატება
+                        </button>
+                        <a href="{{ route('cart.show') }}" class="btn-outline">კალათის ნახვა</a>
+                    </div>
                 </form>
 
                 <dl class="mt-10 border-t border-slate-100 pt-6 space-y-2 text-sm">

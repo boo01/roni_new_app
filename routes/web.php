@@ -10,6 +10,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'show'])->name('home');
+Route::get('/categories', [CatalogController::class, 'categories'])->name('categories');
 Route::get('/category/{slug}', [CatalogController::class, 'category'])->name('category.show');
 Route::get('/product/{slug}', [CatalogController::class, 'product'])->name('product.show');
 
@@ -25,6 +26,13 @@ Route::redirect('/dashboard', '/account')->name('dashboard');
 Route::get('/about', fn () => app(PageController::class)->show('about'))->name('page.about');
 Route::get('/contact', fn () => app(PageController::class)->show('contact'))->name('page.contact');
 Route::get('/page/{slug}', [PageController::class, 'show'])->name('page.show');
+
+// Admin UI language (session-persisted; consumed by SetAdminLocale on panel routes).
+Route::get('/admin/locale/{locale}', function (string $locale) {
+    abort_unless(in_array($locale, \App\Http\Middleware\SetAdminLocale::LOCALES, true), 404);
+    session([\App\Http\Middleware\SetAdminLocale::SESSION_KEY => $locale]);
+    return back(fallback: url('/admin'));
+})->middleware('auth')->name('admin.locale');
 
 Route::middleware('auth')->group(function () {
     Route::get('/account', [AccountController::class, 'show'])->name('account');

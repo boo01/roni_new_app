@@ -17,16 +17,29 @@ class PageResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
-    protected static ?string $navigationLabel = 'Pages';
-
     protected static ?int $navigationSort = 10;
+
+    public static function getNavigationLabel(): string
+    {
+        return __('Pages');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('page');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('pages');
+    }
 
     public static function form(Form $form): Form
     {
         return $form->schema([
             Forms\Components\Section::make()->schema([
                 Forms\Components\TextInput::make('title_ka')
-                    ->label('Title (Georgian)')
+                    ->label(__('Title (Georgian)'))
                     ->required()
                     ->maxLength(255)
                     ->live(onBlur: true)
@@ -36,49 +49,49 @@ class PageResource extends Resource
                     ->required()
                     ->unique(ignoreRecord: true)
                     ->maxLength(255)
-                    ->helperText('URL identifier. About page should be "about", contact page should be "contact".'),
+                    ->helperText(__('URL identifier. About page should be "about", contact page should be "contact".')),
 
                 Forms\Components\Textarea::make('body_ka')
-                    ->label('Body (Georgian) — supports plain text + line breaks')
+                    ->label(__('Body (Georgian) — supports plain text + line breaks'))
                     ->rows(10)
                     ->columnSpanFull(),
             ]),
 
-            Forms\Components\Section::make('Contact details')
-                ->description('Only used by the contact page. Leave empty for regular content pages.')
+            Forms\Components\Section::make(__('Contact details'))
+                ->description(__('Only used by the contact page. Leave empty for regular content pages.'))
                 ->collapsible()
                 ->schema([
                     Forms\Components\Grid::make(2)->schema([
                         Forms\Components\TextInput::make('contact_phone')
-                            ->label('Phone')
+                            ->label(__('Phone'))
                             ->tel()
                             ->maxLength(255),
 
                         Forms\Components\TextInput::make('contact_email')
-                            ->label('Email')
+                            ->label(__('Email'))
                             ->email()
                             ->maxLength(255),
                     ]),
 
                     Forms\Components\Repeater::make('contact_locations')
-                        ->label('Locations')
+                        ->label(__('Locations'))
                         ->schema([
                             Forms\Components\TextInput::make('name')
-                                ->label('Branch name')
+                                ->label(__('Branch name'))
                                 ->required()
                                 ->maxLength(255),
                             Forms\Components\TextInput::make('address')
-                                ->label('Address')
+                                ->label(__('Address'))
                                 ->required()
                                 ->maxLength(255),
                             Forms\Components\TextInput::make('phone')
-                                ->label('Phone')
+                                ->label(__('Phone'))
                                 ->tel()
                                 ->maxLength(255),
                             Forms\Components\Textarea::make('embed_url')
-                                ->label('Google Maps embed URL (src from the iframe)')
+                                ->label(__('Google Maps embed URL (src from the iframe)'))
                                 ->rows(2)
-                                ->helperText('On maps.google.com: Share → Embed a map → copy the src="..." value from the iframe.'),
+                                ->helperText(__('On maps.google.com: Share → Embed a map → copy the src="..." value from the iframe.')),
                         ])
                         ->columns(2)
                         ->reorderable()
@@ -87,13 +100,14 @@ class PageResource extends Resource
                         ->columnSpanFull(),
                 ]),
 
-            Forms\Components\Section::make('Settings')->schema([
+            Forms\Components\Section::make(__('Settings'))->schema([
                 Forms\Components\Grid::make(2)->schema([
                     Forms\Components\Toggle::make('is_published')
-                        ->label('Published')
+                        ->label(__('Published'))
                         ->default(true),
 
                     Forms\Components\TextInput::make('sort_order')
+                        ->label(__('Sort order'))
                         ->numeric()
                         ->default(0),
                 ]),
@@ -106,10 +120,10 @@ class PageResource extends Resource
         return $table
             ->defaultSort('sort_order')
             ->columns([
-                Tables\Columns\TextColumn::make('title_ka')->label('Title')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('title_ka')->label(__('Title'))->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('slug')->fontFamily('mono')->searchable(),
-                Tables\Columns\IconColumn::make('is_published')->label('Published')->boolean(),
-                Tables\Columns\TextColumn::make('updated_at')->dateTime('Y-m-d H:i')->sortable()->toggleable(),
+                Tables\Columns\IconColumn::make('is_published')->label(__('Published'))->boolean(),
+                Tables\Columns\TextColumn::make('updated_at')->label(__('Updated at'))->dateTime('Y-m-d H:i')->sortable()->toggleable(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

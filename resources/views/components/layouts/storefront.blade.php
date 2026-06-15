@@ -18,6 +18,20 @@
 
     <x-storefront.footer />
 
+    {{-- Global toast (add-to-cart confirmations, errors) --}}
+    <div x-data="{ show: false, message: '', type: 'success', _t: null }"
+         @notify.window="message = $event.detail.message; type = $event.detail.type || 'success'; show = true; clearTimeout(_t); _t = setTimeout(() => show = false, 2800)"
+         x-show="show" x-cloak x-transition.opacity.duration.200ms
+         class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
+        <div :class="type === 'error' ? 'bg-red-600' : 'bg-ink'"
+             class="text-white text-sm px-4 py-2.5 rounded-full shadow-card-hover flex items-center gap-2">
+            <svg x-show="type === 'success'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="size-4">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+            </svg>
+            <span x-text="message"></span>
+        </div>
+    </div>
+
     @livewireScripts
 </body>
 </html>

@@ -122,6 +122,21 @@
             </aside>
 
             <div class="lg:col-span-3">
+                <div class="flex items-center justify-between gap-3 mb-4">
+                    <p class="text-sm text-ink-muted">{{ $products->total() }} პროდუქცია</p>
+                    <label class="flex items-center gap-2 text-sm shrink-0">
+                        <span class="text-ink-muted whitespace-nowrap hidden sm:inline">დალაგება:</span>
+                        <select x-data
+                                @change="const u = new URL(window.location); $event.target.value === 'default' ? u.searchParams.delete('sort') : u.searchParams.set('sort', $event.target.value); u.searchParams.delete('page'); window.location = u"
+                                class="input py-1.5 pr-8 text-sm w-auto">
+                            <option value="default" @selected($sort === 'default')>რეკომენდებული</option>
+                            <option value="price_asc" @selected($sort === 'price_asc')>ფასი: დაბლიდან მაღლა</option>
+                            <option value="price_desc" @selected($sort === 'price_desc')>ფასი: მაღლიდან დაბლა</option>
+                            <option value="name_asc" @selected($sort === 'name_asc')>სახელი: ა–ჰ</option>
+                            <option value="name_desc" @selected($sort === 'name_desc')>სახელი: ჰ–ა</option>
+                        </select>
+                    </label>
+                </div>
                 @if($products->isNotEmpty())
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6">
                         @foreach($products as $product)

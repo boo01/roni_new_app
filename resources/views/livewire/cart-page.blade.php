@@ -22,7 +22,7 @@
                         $product = $line['product'];
                         $thumb = $product->getFirstMediaUrl('images', 'thumb');
                     @endphp
-                    <div class="p-4 sm:p-5 flex gap-4 items-start" wire:key="cart-item-{{ $product->id }}">
+                    <div class="p-4 sm:p-5 flex gap-4 items-start" wire:key="cart-line-{{ $line['line_key'] }}">
                         <div class="size-20 sm:size-24 rounded-lg overflow-hidden bg-slate-50 shrink-0">
                             @if($thumb)
                                 <img src="{{ $thumb }}" alt="{{ $product->name_ka }}" class="h-full w-full object-cover">
@@ -40,6 +40,7 @@
                                 <h3 class="text-sm font-medium text-ink line-clamp-2">{{ $product->name_ka }}</h3>
                                 <p class="mt-0.5 text-xs text-ink-faint font-mono">{{ $product->sku }}</p>
                             </a>
+                            <x-storefront.option-tags :options="$line['options']" />
                             <div class="mt-2 flex items-center gap-2">
                                 @if($line['has_discount'])
                                     <span class="text-xs text-ink-faint line-through">₾{{ $fmt($line['unit_retail']) }}</span>
@@ -52,19 +53,19 @@
                         <div class="flex flex-col items-end gap-2">
                             <div class="flex items-center gap-1">
                                 <button type="button"
-                                        wire:click="update({{ $product->id }}, {{ max(1, $line['quantity'] - 1) }})"
+                                        wire:click="updateQuantity('{{ $line['line_key'] }}', {{ max(1, $line['quantity'] - 1) }})"
                                         class="size-7 rounded-md border border-slate-200 text-ink-soft hover:bg-slate-50 transition cursor-pointer"
                                         aria-label="შემცირება">−</button>
                                 <input type="number" min="1" max="999" value="{{ $line['quantity'] }}"
-                                       wire:change="update({{ $product->id }}, $event.target.value)"
+                                       wire:change="updateQuantity('{{ $line['line_key'] }}', $event.target.value)"
                                        class="w-14 text-center input py-1.5">
                                 <button type="button"
-                                        wire:click="update({{ $product->id }}, {{ $line['quantity'] + 1 }})"
+                                        wire:click="updateQuantity('{{ $line['line_key'] }}', {{ $line['quantity'] + 1 }})"
                                         class="size-7 rounded-md border border-slate-200 text-ink-soft hover:bg-slate-50 transition cursor-pointer"
                                         aria-label="გაზრდა">+</button>
                             </div>
                             <p class="text-sm font-semibold text-ink">₾{{ $fmt($line['line_total']) }}</p>
-                            <button type="button" wire:click="remove({{ $product->id }})"
+                            <button type="button" wire:click="remove('{{ $line['line_key'] }}')"
                                     class="text-xs text-ink-muted hover:text-red-600 transition cursor-pointer">წაშლა</button>
                         </div>
                     </div>

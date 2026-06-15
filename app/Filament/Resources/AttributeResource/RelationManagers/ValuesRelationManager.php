@@ -8,18 +8,22 @@ use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class ValuesRelationManager extends RelationManager
 {
     protected static string $relationship = 'values';
 
-    protected static ?string $title = 'Values';
+    public static function getTitle(Model $ownerRecord, string $pageClass): string
+    {
+        return __('Values');
+    }
 
     public function form(Form $form): Form
     {
         return $form->schema([
             Forms\Components\TextInput::make('value_ka')
-                ->label('Value (Georgian)')
+                ->label(__('Value (Georgian)'))
                 ->required()
                 ->maxLength(255)
                 ->live(onBlur: true)
@@ -30,6 +34,7 @@ class ValuesRelationManager extends RelationManager
                 ->maxLength(255),
 
             Forms\Components\TextInput::make('sort_order')
+                ->label(__('Sort order'))
                 ->numeric()
                 ->default(0),
         ]);
@@ -39,11 +44,13 @@ class ValuesRelationManager extends RelationManager
     {
         return $table
             ->recordTitleAttribute('value_ka')
+            ->modelLabel(__('value'))
+            ->pluralModelLabel(__('values'))
             ->defaultSort('sort_order')
             ->columns([
-                Tables\Columns\TextColumn::make('value_ka')->label('Value'),
+                Tables\Columns\TextColumn::make('value_ka')->label(__('Value')),
                 Tables\Columns\TextColumn::make('slug')->fontFamily('mono'),
-                Tables\Columns\TextColumn::make('sort_order')->label('Order'),
+                Tables\Columns\TextColumn::make('sort_order')->label(__('Sort order')),
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make(),
