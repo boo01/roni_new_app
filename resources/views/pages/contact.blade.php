@@ -2,7 +2,7 @@
     <x-slot:title>{{ $page->title_ka }}</x-slot:title>
 
     @php
-        $locations = collect($page->contact_locations ?? [])->filter(fn ($l) => ! empty($l['name'] ?? null));
+        $locations = collect($settings->locations ?? [])->filter(fn ($l) => ! empty($l['name'] ?? null));
     @endphp
 
     <section class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-12">
@@ -15,21 +15,21 @@
         <h1 class="font-mt text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-2">@mt($page->title_ka)</h1>
 
         @if($page->body_ka)
-            <p class="text-ink-muted leading-relaxed mb-8 whitespace-pre-line">{{ $page->body_ka }}</p>
+            <div class="prose prose-slate max-w-none text-ink-soft leading-relaxed mb-8">{!! $page->body_ka !!}</div>
         @endif
 
-        @if($page->contact_phone || $page->contact_email)
+        @if($settings->contact_phone || $settings->contact_email)
             <div class="card p-5 mb-8 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                @if($page->contact_phone)
+                @if($settings->contact_phone)
                     <div>
                         <p class="text-xs text-ink-muted uppercase tracking-wide mb-1">ტელეფონი</p>
-                        <a href="tel:{{ $page->contact_phone }}" class="text-ink hover:underline">{{ $page->contact_phone }}</a>
+                        <a href="tel:{{ $settings->contact_phone }}" class="text-ink hover:underline">{{ $settings->contact_phone }}</a>
                     </div>
                 @endif
-                @if($page->contact_email)
+                @if($settings->contact_email)
                     <div>
                         <p class="text-xs text-ink-muted uppercase tracking-wide mb-1">ელ. ფოსტა</p>
-                        <a href="mailto:{{ $page->contact_email }}" class="text-ink hover:underline">{{ $page->contact_email }}</a>
+                        <a href="mailto:{{ $settings->contact_email }}" class="text-ink hover:underline">{{ $settings->contact_email }}</a>
                     </div>
                 @endif
             </div>

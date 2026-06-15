@@ -18,8 +18,6 @@ class Category extends Model
         'is_active',
         'visible_to_retail',
         'visible_to_b2b',
-        'show_in_header',
-        'header_sort_order',
     ];
 
     protected function casts(): array
@@ -28,9 +26,7 @@ class Category extends Model
             'is_active' => 'boolean',
             'visible_to_retail' => 'boolean',
             'visible_to_b2b' => 'boolean',
-            'show_in_header' => 'boolean',
             'sort_order' => 'integer',
-            'header_sort_order' => 'integer',
         ];
     }
 

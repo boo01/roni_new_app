@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Page;
+use App\Models\SiteSetting;
 
 class PageController extends Controller
 {
@@ -13,11 +14,13 @@ class PageController extends Controller
             ->where('is_published', true)
             ->firstOrFail();
 
-        $view = match ($page->slug) {
-            'contact' => 'pages.contact',
-            default => 'pages.page',
-        };
+        if ($page->slug === 'contact') {
+            return view('pages.contact', [
+                'page' => $page,
+                'settings' => SiteSetting::current(),
+            ]);
+        }
 
-        return view($view, compact('page'));
+        return view('pages.page', compact('page'));
     }
 }

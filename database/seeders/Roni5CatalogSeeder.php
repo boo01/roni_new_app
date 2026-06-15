@@ -75,7 +75,6 @@ class Roni5CatalogSeeder extends Seeder
         $this->command->info('Seeding ' . count($catalog['categories']) . ' categories…');
         foreach ($catalog['categories'] as $c) {
             $retail = (bool) ($rootOf($c['source_id'])['in_header'] ?? false);
-            $isRoot = empty($c['parent_source_id']);
 
             $modelBySource[$c['source_id']] = Category::updateOrCreate(
                 ['slug' => $c['slug']],
@@ -85,10 +84,6 @@ class Roni5CatalogSeeder extends Seeder
                     'is_active' => $c['is_active'] ?? true,
                     'visible_to_retail' => $retail,
                     'visible_to_b2b' => true,
-                    // Retail roots: header per crawl flag. Company roots: header
-                    // for B2B so the wholesale catalogue is browsable.
-                    'show_in_header' => $isRoot && ($retail ? (bool) ($c['in_header'] ?? false) : true),
-                    'header_sort_order' => $c['header_order'] ?? 0,
                 ],
             );
         }

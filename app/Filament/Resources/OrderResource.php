@@ -86,6 +86,14 @@ class OrderResource extends Resource
                     ->columnSpanFull(),
             ]),
 
+            Infolists\Components\Section::make(__('Products'))
+                ->description(__('Items to pick and prepare for this order.'))
+                ->schema([
+                    Infolists\Components\ViewEntry::make('items')
+                        ->hiddenLabel()
+                        ->view('filament.infolists.order-items'),
+                ]),
+
             Infolists\Components\Section::make(__('Totals'))->schema([
                 Infolists\Components\Grid::make(4)->schema([
                     Infolists\Components\TextEntry::make('subtotal_retail')->money('GEL')->label(__('Retail subtotal')),

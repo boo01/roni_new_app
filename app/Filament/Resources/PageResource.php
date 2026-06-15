@@ -51,54 +51,18 @@ class PageResource extends Resource
                     ->maxLength(255)
                     ->helperText(__('URL identifier. About page should be "about", contact page should be "contact".')),
 
-                Forms\Components\Textarea::make('body_ka')
-                    ->label(__('Body (Georgian) — supports plain text + line breaks'))
-                    ->rows(10)
+                Forms\Components\RichEditor::make('body_ka')
+                    ->label(__('Body (Georgian)'))
+                    ->toolbarButtons([
+                        'bold', 'italic', 'underline', 'strike', 'link',
+                        'h2', 'h3', 'bulletList', 'orderedList', 'blockquote',
+                        'attachFiles', 'undo', 'redo',
+                    ])
+                    ->fileAttachmentsDisk('public')
+                    ->fileAttachmentsDirectory('pages')
+                    ->fileAttachmentsVisibility('public')
                     ->columnSpanFull(),
             ]),
-
-            Forms\Components\Section::make(__('Contact details'))
-                ->description(__('Only used by the contact page. Leave empty for regular content pages.'))
-                ->collapsible()
-                ->schema([
-                    Forms\Components\Grid::make(2)->schema([
-                        Forms\Components\TextInput::make('contact_phone')
-                            ->label(__('Phone'))
-                            ->tel()
-                            ->maxLength(255),
-
-                        Forms\Components\TextInput::make('contact_email')
-                            ->label(__('Email'))
-                            ->email()
-                            ->maxLength(255),
-                    ]),
-
-                    Forms\Components\Repeater::make('contact_locations')
-                        ->label(__('Locations'))
-                        ->schema([
-                            Forms\Components\TextInput::make('name')
-                                ->label(__('Branch name'))
-                                ->required()
-                                ->maxLength(255),
-                            Forms\Components\TextInput::make('address')
-                                ->label(__('Address'))
-                                ->required()
-                                ->maxLength(255),
-                            Forms\Components\TextInput::make('phone')
-                                ->label(__('Phone'))
-                                ->tel()
-                                ->maxLength(255),
-                            Forms\Components\Textarea::make('embed_url')
-                                ->label(__('Google Maps embed URL (src from the iframe)'))
-                                ->rows(2)
-                                ->helperText(__('On maps.google.com: Share → Embed a map → copy the src="..." value from the iframe.')),
-                        ])
-                        ->columns(2)
-                        ->reorderable()
-                        ->collapsible()
-                        ->itemLabel(fn (array $state): ?string => $state['name'] ?? null)
-                        ->columnSpanFull(),
-                ]),
 
             Forms\Components\Section::make(__('Settings'))->schema([
                 Forms\Components\Grid::make(2)->schema([

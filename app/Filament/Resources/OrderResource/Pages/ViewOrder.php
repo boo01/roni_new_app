@@ -13,6 +13,13 @@ class ViewOrder extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('invoice')
+                ->label(__('Print / Invoice'))
+                ->icon('heroicon-o-printer')
+                ->color('gray')
+                ->url(fn () => route('order.invoice', $this->record->order_number))
+                ->openUrlInNewTab(),
+
             Actions\EditAction::make(),
         ];
     }

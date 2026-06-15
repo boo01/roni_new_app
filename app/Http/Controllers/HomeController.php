@@ -14,8 +14,8 @@ class HomeController extends Controller
 
         $categories = Category::query()
             ->visibleTo($audience)
-            ->where('show_in_header', true)
-            ->orderBy('header_sort_order')
+            ->whereNull('parent_id')
+            ->orderBy('sort_order')
             ->orderBy('name_ka')
             ->get();
 

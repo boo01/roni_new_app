@@ -93,16 +93,6 @@ class CategoryResource extends Resource
                 ]),
             ]),
 
-            Forms\Components\Section::make(__('Header navigation'))->schema([
-                Forms\Components\Toggle::make('show_in_header')
-                    ->label(__('Show in header menu'))
-                    ->default(false)
-                    ->helperText(__('Only categories with this on appear in the top nav. Others are still browsable via search and direct URL.')),
-                Forms\Components\TextInput::make('header_sort_order')
-                    ->label(__('Header order'))
-                    ->numeric()
-                    ->default(0),
-            ]),
         ]);
     }
 
@@ -133,11 +123,6 @@ class CategoryResource extends Resource
                 Tables\Columns\IconColumn::make('is_active')
                     ->label(__('Active'))
                     ->boolean(),
-
-                Tables\Columns\IconColumn::make('show_in_header')
-                    ->label(__('Header'))
-                    ->boolean()
-                    ->toggleable(),
 
                 Tables\Columns\IconColumn::make('visible_to_retail')
                     ->label(__('Retail'))

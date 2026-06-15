@@ -11,7 +11,7 @@
         <h1 class="font-mt text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-6">@mt($page->title_ka)</h1>
 
         @if($page->body_ka)
-            <div class="prose prose-slate max-w-none text-ink-soft leading-relaxed whitespace-pre-line">{{ $page->body_ka }}</div>
+            <div class="prose prose-slate max-w-none text-ink-soft leading-relaxed">{!! $page->body_ka !!}</div>
         @endif
     </section>
 </x-layouts.storefront>
