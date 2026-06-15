@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -19,6 +20,9 @@ class Product extends Model implements HasMedia
         'name_ka',
         'slug',
         'description_ka',
+        'meta_title',
+        'meta_description',
+        'meta_keywords',
         'retail_price',
         'stock_quantity',
         'track_stock',
@@ -137,5 +141,41 @@ class Product extends Model implements HasMedia
     public function priceFor(?User $user): array
     {
         return app(\App\Services\Pricing::class)->priceFor($user, $this);
+    }
+
+    /**
+     * SEO / social-share metadata. Each field uses the manual override if set,
+     * otherwise it's auto-generated from the product.
+     *
+     * @return array{title:string, description:string, keywords:?string, og_image:?string, og_type:string}
+     */
+    public function seoMeta(): array
+    {
+        $description = $this->meta_description
+            ?: (string) Str::of(strip_tags((string) $this->description_ka))->squish()->limit(160);
+
+        if (blank($description)) {
+            $description = trim($this->name_ka . ' · ' . $this->sku, ' ·');
+        }
+
+        return [
+            'title' => $this->meta_title ?: $this->name_ka,
+            'description' => $description,
+            'keywords' => $this->meta_keywords ?: $this->autoKeywords(),
+            'og_image' => $this->getFirstMediaUrl('images', 'card') ?: null,
+            'og_type' => 'product',
+        ];
+    }
+
+    private function autoKeywords(): ?string
+    {
+        $words = $this->categories
+            ->pluck('name_ka')
+            ->prepend($this->name_ka)
+            ->filter()
+            ->unique()
+            ->take(10);
+
+        return $words->isNotEmpty() ? $words->implode(', ') : null;
     }
 }

@@ -90,6 +90,31 @@ class ProductResource extends Resource
                         ->helperText(__('Manage attribute definitions and their values from Catalog → Filters.')),
                 ])->collapsed(fn ($context) => $context === 'create'),
 
+                Forms\Components\Section::make(__('SEO'))
+                    ->description(__('Leave empty to auto-generate. The share image is the first product photo.'))
+                    ->collapsed()
+                    ->schema([
+                        Forms\Components\Placeholder::make('seo_hint')
+                            ->hiddenLabel()
+                            ->content(__('Leave these empty and the tags below are generated automatically from the product. The grey text shows what will be used.')),
+                        Forms\Components\TextInput::make('meta_title')
+                            ->label(__('Meta title'))
+                            ->maxLength(255)
+                            ->placeholder(fn (?Product $record) => $record?->seoMeta()['title'])
+                            ->helperText(__('Defaults to the product name.')),
+                        Forms\Components\Textarea::make('meta_description')
+                            ->label(__('Meta description'))
+                            ->rows(2)
+                            ->maxLength(255)
+                            ->placeholder(fn (?Product $record) => $record?->seoMeta()['description'])
+                            ->helperText(__('Defaults to the start of the description.')),
+                        Forms\Components\TextInput::make('meta_keywords')
+                            ->label(__('Meta keywords'))
+                            ->maxLength(255)
+                            ->placeholder(fn (?Product $record) => $record?->seoMeta()['keywords'])
+                            ->helperText(__('Comma-separated. Defaults to the name + categories.')),
+                    ]),
+
                 Forms\Components\Section::make(__('Images'))->schema([
                     Forms\Components\SpatieMediaLibraryFileUpload::make('images')
                         ->collection('images')

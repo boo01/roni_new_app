@@ -1,4 +1,4 @@
-<x-layouts.storefront>
+<x-layouts.storefront :seo="$product->seoMeta()">
     <x-slot:title>{{ $product->name_ka }}</x-slot:title>
 
     @php

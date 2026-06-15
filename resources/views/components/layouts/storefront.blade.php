@@ -1,10 +1,35 @@
+@props(['seo' => null])
 <!DOCTYPE html>
 <html lang="ka">
+@php
+    $settings = \App\Models\SiteSetting::current();
+    $brand = $settings->meta_title ?: 'Roni5';
+    // Page-level SEO (e.g. a product) overrides site defaults; both optional.
+    $metaDescription = $seo['description'] ?? $settings->meta_description;
+    $metaKeywords = $seo['keywords'] ?? null;
+    $ogTitle = $seo['title'] ?? ($title ?? $brand);
+    $ogType = $seo['og_type'] ?? 'website';
+    $ogImage = $seo['og_image'] ?? ($settings->logo ? \Illuminate\Support\Facades\Storage::disk('public')->url($settings->logo) : null);
+@endphp
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? 'Roni5' }} — Roni5</title>
+    <title>{{ $title ?? $brand }} — {{ $brand }}</title>
+    @if($metaDescription)
+        <meta name="description" content="{{ $metaDescription }}">
+    @endif
+    @if($metaKeywords)
+        <meta name="keywords" content="{{ $metaKeywords }}">
+    @endif
+    <meta property="og:type" content="{{ $ogType }}">
+    <meta property="og:title" content="{{ $ogTitle }}">
+    @if($metaDescription)
+        <meta property="og:description" content="{{ $metaDescription }}">
+    @endif
+    @if($ogImage)
+        <meta property="og:image" content="{{ url($ogImage) }}">
+    @endif
     <link rel="icon" type="image/png" href="/favicon.png">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
