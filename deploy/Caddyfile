@@ -1,0 +1,21 @@
+# Host Caddy config for Roni5 — HTTP on :8000, reverse-proxies PHP to the
+# php-fpm container at 127.0.0.1:9000. Code is bind-mounted into the container
+# at the identical path, so SCRIPT_FILENAME resolves on both sides.
+#
+# Copied to /etc/caddy/Caddyfile during provisioning.
+#
+# To add a domain + automatic HTTPS later, replace ":8000" with your domain
+# (e.g. "shop.example.com") and Caddy will provision Let's Encrypt TLS on 443.
+:8000 {
+	root * /srv/roni5/public
+	encode gzip zstd
+	php_fastcgi 127.0.0.1:9000
+	file_server
+
+	log {
+		output file /var/log/caddy/roni5.log {
+			roll_size 10MiB
+			roll_keep 5
+		}
+	}
+}
