@@ -64,6 +64,19 @@ Full architecture + migration strategy: `/Users/user/.claude/plans/my-friend-cre
   - **Invoice overhaul**: embeds Noto Sans Georgian (see Fonts note); table-based layout (dompdf has no flexbox); first product image + chosen options per line.
   - **Home category carousel** (scroll-snap + arrows, representative images) + `/categories` "see all" page (`CatalogController::categories`).
   - **Category sorting**: `?sort=price_asc|price_desc|name_asc|name_desc` (whitelisted in `CatalogController::normalizeSort/applySort`); dropdown preserves active filters.
+- ✅ Phase 11 — **Admin in Georgian + language switch**:
+  - `laravel-lang/common` (dev) published `lang/ka.json` (~449 keys) + `lang/ka/*`. All Filament resources/pages use `__()` with English keys → Georgian via `lang/ka.json`. **When adding admin labels, wrap in `__()` and add the Georgian to `lang/ka.json`.**
+  - ქარ/ENG switch in the admin topbar: `App\Http\Middleware\SetAdminLocale` (session key `admin_locale`, default `ka`, persistent middleware on the panel so Livewire AJAX keeps the locale), route `admin.locale`, view `resources/views/filament/locale-switch.blade.php` injected via `PanelsRenderHook::USER_MENU_BEFORE` in `AdminPanelProvider`.
+- ✅ Phase 12 — **Order admin view + product card polish**:
+  - Order view (`OrderResource` infolist) now has a **Products** section — custom view `resources/views/filament/infolists/order-items.blade.php` (inline styles so it renders regardless of Filament's Tailwind build) showing per line: image with **prev/next arrows that fade in on hover** (Alpine; `top:40px` fixed-center — never use transform there, `x-transition` fights it), name, SKU, chosen options (amber pills), qty, unit/line price, "open product" link. `ViewOrder` has a **Print / Invoice** header action → the invoice PDF.
+  - Product card add-to-cart button moved **off the image overlay to beside the price** (round icon button; `product-card.blade.php`).
+- ✅ Phase 13 — **Settings page, menu manager, rich editor, SEO, footer**:
+  - **Global Settings** (`/admin/manage-settings`, custom page `App\Filament\Pages\ManageSettings`) → single-row `site_settings` table + `SiteSetting` model (`current()` request-cached singleton, `whatsappNumber()`). Holds: logo upload (public disk `branding/`), SEO `meta_title`/`meta_description`, contact phone/email/whatsapp, `social_links` (JSON: facebook/instagram/youtube/tiktok/telegram/linkedin), `locations` (repeater). **Contact + locations were MOVED off the `pages` table into settings** (migration dropped `pages.contact_*`). `/contact` view + footer read from `SiteSetting::current()`.
+  - **Menu manager** (`/admin/manage-menu`, custom page `App\Filament\Pages\ManageMenu`) → `menu_items` table (parent_id, location, type `page|category|link`, page_id/category_id/url, target_blank, is_active, sort_order) + `MenuItem` model (`resolveLabel()`/`resolveUrl()`). Nested **2-level reorderable repeaters** (no plugin). `App\Support\Menu::header($audience)` builds the storefront header from menu_items, filters category/page items by audience visibility, **falls back to top-level categories when empty**. `nav.blade.php` renders from it. Items whose category is retail-hidden are tagged **"B2B only"** in the admin (labels + category picker).
+  - **`categories.show_in_header` + `header_sort_order` columns were DROPPED** — header is now menu-driven; home carousel + menu fallback use top-level categories (`parent_id IS NULL`).
+  - **Rich text editor**: `Page.body_ka` uses Filament `RichEditor` with image upload (public disk `pages/`). `pages/page.blade.php` + `contact.blade.php` render HTML (`{!! !!}`).
+  - **SEO**: storefront layout (`components/layouts/storefront.blade.php`) accepts a `:seo` prop and renders `<title>` + meta description + `og:title/description/image` (site defaults from `SiteSetting`, or page-level). **Per-product SEO**: `products.meta_title/meta_description/meta_keywords` (nullable overrides) + `Product::seoMeta()` auto-generates from name / description (strip+160) / categories / first image. `product.blade.php` passes `:seo="$product->seoMeta()"`; `ProductResource` has a collapsed **SEO** section (override fields with placeholders showing the auto value).
+  - **Footer** (`footer.blade.php`): contact icons (phone/email/WhatsApp) + social brand-icon links (only render when that URL is set). Logo in `nav.blade.php` (falls back to "Roni5" text).
 
 ## Current data state (post Phase 9)
 - 574 products: 213 retail-visible + 361 B2B-only wholesale
@@ -78,15 +91,19 @@ Full architecture + migration strategy: `/Users/user/.claude/plans/my-friend-cre
 - Only weights 400 + 700 exist. Use `font-weight: 400` or `700` only in the invoice CSS — `500`/`600` fall back to a non-Georgian font and render as `?`.
 - These fonts cover Georgian + Latin + digits + ₾ (U+20BE).
 
+## Session state (uncommitted — read before continuing)
+- **EVERYTHING from Phases 10–13 is UNCOMMITTED.** Git is on `main`, **no remote** configured, last commit predates this work. User will push themselves to `git@github.com:boo01/roni_new_app.git` (must run `git add -A`, not `git add README.md`; create the GitHub repo empty first; SSH key `~/.ssh/id_ed25519` exists).
+- Migrations added this session (all already run on dev DB): `2026_06_08_000001/000002` (options flags, options_snapshot), `2026_06_15_000001` (site_settings + move contact off pages), `000002` (menu_items + seed), `000003` (drop categories header flags), `000004` (settings logo/SEO/social), `000005` (products SEO). `php artisan test` = **47 passing**. Assets built (`npm run build`).
+- Test/demo data on dev: product `01000000` (id 574) has the color-options demo; product `12323123213` (id 575) is a user-made SEO test; order `R-20260610-XBLEH` is a real checkout test.
+
 ## Known TODOs / open items
-- The "ფერი" (color) attribute is set selectable+required and attached to the test product `01000000` (SKU) as a demo of options. Owner manages attributes/options in admin → Catalog → Filters.
-- Drag-drop image upload in Filament product form sometimes doesn't persist on Save — to reproduce + fix
-- Confirm/polish the live search (header SearchBox livewire component) — verify it's reachable and the result UI matches the design
-- Admin UI to create/manage attributes + filter values (Phase 7C added the storefront filters; admin CRUD may need surfacing)
-- Multi-category assignment UX in Filament product form (model is many-to-many; confirm form uses CheckboxList or similar)
-- B2B header is busy (~13 items: 8 retail roots + 5 company roots). Consider hiding/renaming company roots via admin `show_in_header` toggle once the owner picks what to feature
-- Production: switch `MAIL_MAILER` from `log` to Gmail SMTP per the owner's setup; flip DB env to the Georgian host's MySQL
-- The 19 cases where company price ≥ retail price were skipped (no override) — log these for the owner to review manually
+- **Hosting not chosen yet.** Discussed: cheapest+drop-in = shared cPanel MySQL (~$5) or raw Hetzner VPS (~€4, install MySQL); managed = Forge Hobby $12 + VPS (~$16, auto-MySQL + daily backups); Laravel Cloud Starter ($5+usage) was **rejected for now** because its managed DB is **Postgres** (app is MySQL → would need migration) and cost is usage-based. Recommended a flat **MySQL** option. Owner to decide; then write deploy steps.
+- **Footer About/Contact links + `/about` `/contact` routes 404** — they hardcode slugs `about`/`contact`, but the only page has slug `chvens-shesakheb`. Pre-existing. Fix idea: drive footer from a menu, or relax the routes/PageController. (`page.about`/`page.contact` routes in `routes/web.php`.)
+- Rich-editor product/page **image upload** is wired (public disk) but not yet tested with a real file upload.
+- Drag-drop image upload in Filament product form sometimes doesn't persist on Save — to reproduce + fix.
+- Live search (header `SearchBox` Livewire) — at ~20k products a MySQL fulltext index may be needed; currently fine.
+- Production: switch `MAIL_MAILER` from `log` to Gmail SMTP; set production MySQL `.env`; `APP_ENV=production`, `APP_DEBUG=false`; `config/route/view:cache`; `storage:link`; `db:seed --class=Roni5CatalogSeeder`.
+- The 19 cases where company price ≥ retail price were skipped (no override) — log for owner review.
 
 ## .env recent change
 The user renamed `APP_NAME` to `Roni` (was `Laravel`). Keep that.
@@ -95,4 +112,6 @@ The user renamed `APP_NAME` to `Roni` (was `Laravel`). Keep that.
 - Don't compute prices outside `Pricing` service.
 - Don't add online payment yet — checkout creates an invoice-only order.
 - Don't add features the plan didn't include (no wishlists, no reviews, no multi-currency).
-- Don't build i18n yet — Georgian only. The schema is ready for future languages.
+- Storefront **content** is Georgian-only (no `_en`/`_ru` yet). The **admin UI** is bilingual (ქარ/ENG) via `lang/ka.json` — that's UI translation, not content i18n.
+- Don't reintroduce `categories.show_in_header` — the header is menu-driven now (`menu_items` + `App\Support\Menu`).
+- Don't compute SEO/meta inline — use `Product::seoMeta()` / `SiteSetting` + the layout's `:seo` prop.
