@@ -1,0 +1,70 @@
+# Production stack for 152.53.14.199 — Laravel (php-fpm) + MySQL, plus queue
+# worker and scheduler using the same image. Host Caddy fronts it on :8000.
+# Compose reads ./.env for ${...} interpolation and env_file.
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        UID: "1000"
+        GID: "1000"
+    image: roni5-app
+    restart: unless-stopped
+    working_dir: /srv/roni5
+    env_file: .env
+    volumes:
+      - /srv/roni5:/srv/roni5
+    ports:
+      # php-fpm reachable only from the host (Caddy proxies to it).
+      - "127.0.0.1:9000:9000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: "${DB_DATABASE}"
+      MYSQL_USER: "${DB_USERNAME}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
+    ports:
+      # External port 3311 -> container 3306. Access is firewalled to allowed
+      # IPs via the DOCKER-USER iptables chain (see deploy/mysql-allow-ip.sh).
+      - "3311:3306"
+    volumes:
+      - roni5-mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p${DB_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  worker:
+    image: roni5-app
+    restart: unless-stopped
+    working_dir: /srv/roni5
+    env_file: .env
+    volumes:
+      - /srv/roni5:/srv/roni5
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  scheduler:
+    image: roni5-app
+    restart: unless-stopped
+    working_dir: /srv/roni5
+    env_file: .env
+    volumes:
+      - /srv/roni5:/srv/roni5
+    command: php artisan schedule:work
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+volumes:
+  roni5-mysql-data:
