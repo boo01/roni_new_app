@@ -11,7 +11,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        // Production runs behind Cloudflare → nginx → Caddy. Trust proxy
+        // headers (X-Forwarded-Proto/Host/For) so Laravel detects HTTPS and the
+        // real host, and generates https:// URLs, redirects and secure cookies
+        // instead of http://. Only our own proxies can reach php-fpm.
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
