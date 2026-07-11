@@ -100,14 +100,6 @@
                     @endif
                 </div>
 
-                @auth
-                    @if(!auth()->user()->isB2B())
-                        <p class="mt-2 text-xs text-ink-muted">კერძო პირის ფასი</p>
-                    @endif
-                @else
-                    <p class="mt-2 text-xs text-ink-muted">კერძო პირის ფასი. <a href="{{ route('login') }}" class="underline hover:text-ink">შესვლა</a> კომპანიის ფასისთვის.</p>
-                @endauth
-
                 @if($product->description_ka)
                     <div class="mt-6 prose prose-slate prose-sm max-w-none text-ink-soft">
                         {!! nl2br(e($product->description_ka)) !!}
