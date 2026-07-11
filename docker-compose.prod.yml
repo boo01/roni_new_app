@@ -1,6 +1,9 @@
 # Production stack for 152.53.14.199 — Laravel (php-fpm) + MySQL, plus queue
 # worker and scheduler using the same image. Host Caddy fronts it on :8000.
-# Compose reads ./.env for ${...} interpolation and env_file.
+# Compose reads ./.env for ${...} interpolation (mysql creds). The app/worker/
+# scheduler do NOT use env_file — Laravel reads the bind-mounted /srv/roni5/.env
+# directly, so `.env` edits + `config:cache` take effect without recreating the
+# container (a `docker compose restart` does NOT reload env_file).
 services:
   app:
     build:
@@ -12,7 +15,6 @@ services:
     image: roni5-app
     restart: unless-stopped
     working_dir: /srv/roni5
-    env_file: .env
     volumes:
       - /srv/roni5:/srv/roni5
     ports:
@@ -46,7 +48,6 @@ services:
     image: roni5-app
     restart: unless-stopped
     working_dir: /srv/roni5
-    env_file: .env
     volumes:
       - /srv/roni5:/srv/roni5
     command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
@@ -58,7 +59,6 @@ services:
     image: roni5-app
     restart: unless-stopped
     working_dir: /srv/roni5
-    env_file: .env
     volumes:
       - /srv/roni5:/srv/roni5
     command: php artisan schedule:work
