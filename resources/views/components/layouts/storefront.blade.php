@@ -3,7 +3,7 @@
 <html lang="ka">
 @php
     $settings = \App\Models\SiteSetting::current();
-    $brand = $settings->meta_title ?: 'Roni5';
+    $brand = $settings->meta_title ?: 'Ronistationery';
     // Page-level SEO (e.g. a product) overrides site defaults; both optional.
     $metaDescription = $seo['description'] ?? $settings->meta_description;
     $metaKeywords = $seo['keywords'] ?? null;

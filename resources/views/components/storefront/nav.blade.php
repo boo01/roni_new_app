@@ -7,13 +7,13 @@
 <header class="sticky top-0 z-30 bg-white/85 backdrop-blur border-b border-slate-100">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="flex h-16 items-center justify-between gap-3 sm:gap-6">
-            @php $brand = $settings->meta_title ?: 'Roni5'; @endphp
+            @php $brand = $settings->meta_title ?: 'Roni'; @endphp
             <a href="{{ route('home') }}" class="flex items-center gap-2 group shrink-0" aria-label="{{ $brand }}">
                 @if($settings->logo)
                     <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($settings->logo) }}"
                          alt="{{ $brand }}" class="h-8 w-auto max-w-[150px] object-contain">
                 @else
-                    <span class="text-xl font-bold tracking-tight text-ink">Roni<span class="text-deal">5</span></span>
+                    <span class="text-xl font-bold tracking-tight text-ink">Roni</span>
                 @endif
             </a>
 

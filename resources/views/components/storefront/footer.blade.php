@@ -75,7 +75,7 @@
         @endif
 
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p class="text-sm text-ink-muted">© {{ now()->year }} Roni5 — საკანცელარიო და საოფისე ნივთები</p>
+            <p class="text-sm text-ink-muted">© {{ now()->year }} Ronistationery — საკანცელარიო და საოფისე ნივთები</p>
 
             <nav class="flex items-center gap-1 text-sm" aria-label="Footer">
                 @foreach($footerPages as $page)
