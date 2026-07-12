@@ -10,13 +10,13 @@
 	root * /srv/roni5/public
 	encode gzip zstd
 	# TLS is terminated upstream (Cloudflare → nginx); the nginx→Caddy hop is
-	# plain HTTP and Caddy strips the upstream X-Forwarded-Proto. Force the PHP
-	# request to be seen as HTTPS so Laravel generates AND validates https
-	# signed URLs consistently — otherwise Livewire file uploads 401 (the signed
-	# upload URL is generated as https but validated against an http request).
+	# plain HTTP. Tell PHP the request is HTTPS via $_SERVER['HTTPS'] so Laravel
+	# detects https and generates+validates https signed URLs consistently —
+	# otherwise https URL generation + Livewire signed upload URLs 401 against an
+	# http-perceived request. NOTE: the app must NOT trustProxies here, since
+	# Caddy rewrites X-Forwarded-Proto to http, which would override this.
 	php_fastcgi 127.0.0.1:9000 {
 		env HTTPS on
-		env HTTP_X_FORWARDED_PROTO https
 	}
 	file_server
 
