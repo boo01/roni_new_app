@@ -11,11 +11,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Production runs behind Cloudflare → nginx → Caddy. Trust proxy
-        // headers (X-Forwarded-Proto/Host/For) so Laravel detects HTTPS and the
-        // real host, and generates https:// URLs, redirects and secure cookies
-        // instead of http://. Only our own proxies can reach php-fpm.
-        $middleware->trustProxies(at: '*');
+        // Do NOT trust proxy proto headers here: Caddy (the last hop before
+        // php-fpm) rewrites X-Forwarded-Proto to "http", and trusting it would
+        // override the real scheme and make Laravel see requests as insecure —
+        // breaking https URL generation and Livewire's signed upload URLs.
+        // Instead the Caddyfile sets `env HTTPS on`, so Laravel detects https
+        // from $_SERVER['HTTPS']. See deploy/Caddyfile.
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
