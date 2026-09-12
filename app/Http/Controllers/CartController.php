@@ -32,6 +32,16 @@ class CartController extends Controller
     }
 
     /**
+     * Current cart quantity, used by the front-end to re-sync the header badge
+     * after the browser restores a page from its back/forward cache (where the
+     * server-rendered count is whatever it was before the user added an item).
+     */
+    public function count(Cart $cart)
+    {
+        return response()->json(['count' => $cart->totalQuantity()]);
+    }
+
+    /**
      * Validate the submitted option choices against what the product actually
      * offers, and snapshot human-readable labels for the cart/order.
      *

@@ -55,6 +55,10 @@ document.addEventListener('submit', (e) => {
         method: 'POST',
         headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
         body: new FormData(form),
+        // Let the request finish even if the user navigates away (e.g. hits the
+        // back button) right after clicking — otherwise the browser cancels the
+        // in-flight POST and the item is silently never added.
+        keepalive: true,
     })
         .then(async (res) => {
             const data = await res.json().catch(() => ({}));
@@ -68,4 +72,29 @@ document.addEventListener('submit', (e) => {
         })
         .catch(() => notify('ქსელის შეცდომა. სცადეთ თავიდან.', 'error'))
         .finally(() => { if (btn) btn.disabled = false; });
+});
+
+// --- Re-sync cart state after a back/forward-cache restore ---------------
+// Chrome can restore a page from its back/forward cache with the DOM exactly
+// as it was left, so the header badge (and the cart page itself) still show
+// the count from before the user added something. `persisted` is true only
+// for such restores, so a normal load never pays for this.
+window.addEventListener('pageshow', (e) => {
+    if (!e.persisted) return;
+
+    // The cart page renders its lines server-side; only a reload is truthful.
+    if (window.location.pathname.replace(/\/+$/, '') === '/cart') {
+        window.location.reload();
+        return;
+    }
+
+    fetch('/cart/count', {
+        headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+    })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+            if (!data) return;
+            window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.count } }));
+        })
+        .catch(() => {});
 });

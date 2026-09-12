@@ -92,6 +92,57 @@ class Product extends Model implements HasMedia
         return $this->categories->firstWhere('pivot.is_primary', true) ?? $this->categories->first();
     }
 
+    /**
+     * The product's categories that this audience may actually open. The raw
+     * relation can include categories hidden from them, whose pages 404.
+     *
+     * @return Collection<int, Category>
+     */
+    public function visibleCategories(string $audience): Collection
+    {
+        return $this->categories
+            ->filter(fn (Category $c) => $c->is_active && $c->{'visible_to_' . $audience})
+            ->values();
+    }
+
+    /**
+     * The most specific category this product sits in that the given audience
+     * may actually see. Most products are attached to both a root and one of
+     * its subcategories, and the primary flag usually points at the root — so
+     * depth decides, and the primary flag only breaks ties. This is what the
+     * breadcrumb trail and the prev/next arrows are built from.
+     */
+    public function breadcrumbCategory(string $audience): ?Category
+    {
+        return $this->visibleCategories($audience)
+            ->sortByDesc(fn (Category $c) => [
+                $c->ancestors()->count(),
+                $c->pivot->is_primary ? 1 : 0,
+            ])
+            ->first();
+    }
+
+    /**
+     * Root-to-leaf category chain for the breadcrumb, every entry linkable.
+     * Ancestors hidden from this audience are dropped rather than linked —
+     * their category pages would 404 for this visitor.
+     *
+     * @return Collection<int, Category>
+     */
+    public function breadcrumbTrail(string $audience): Collection
+    {
+        $category = $this->breadcrumbCategory($audience);
+
+        if (! $category) {
+            return collect();
+        }
+
+        return $category->ancestors()
+            ->push($category)
+            ->filter(fn (Category $c) => $c->is_active && $c->{'visible_to_' . $audience})
+            ->values();
+    }
+
     public function groupPrices(): HasMany
     {
         return $this->hasMany(ProductGroupPrice::class);
