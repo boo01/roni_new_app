@@ -156,7 +156,75 @@ class CatalogController extends Controller
             ->with(['categories', 'media', 'groupPrices', 'attributeValues.attribute'])
             ->firstOrFail();
 
-        return view('pages.product', compact('product'));
+        $breadcrumbTrail = $product->breadcrumbTrail($audience);
+        $productCategories = $product->visibleCategories($audience);
+
+        [$prevProduct, $nextProduct] = $this->productNeighbours($product, $audience);
+
+        return view('pages.product', compact(
+            'product', 'prevProduct', 'nextProduct', 'breadcrumbTrail', 'productCategories'
+        ));
+    }
+
+    /**
+     * The products either side of this one, within the category the breadcrumb
+     * ends on, walked in the category page's default order so the arrows follow
+     * the list the customer just came from.
+     *
+     * Either end may be null — the arrows stop at the edges rather than wrap.
+     *
+     * @return array{0: ?Product, 1: ?Product}
+     */
+    private function productNeighbours(Product $product, string $audience): array
+    {
+        $category = $product->breadcrumbCategory($audience);
+
+        if (! $category) {
+            return [null, null];
+        }
+
+        return [
+            $this->neighbour($product, $category, $audience, 'previous'),
+            $this->neighbour($product, $category, $audience, 'next'),
+        ];
+    }
+
+    /**
+     * Step one product forwards or backwards from $product inside $category.
+     *
+     * Candidates whose own breadcrumb lands on a different category are skipped
+     * rather than linked: a product attached only to a root belongs to a
+     * different list than its subcategory neighbours, and following that link
+     * would be one-way — "next" then "previous" would not come back here.
+     */
+    private function neighbour(Product $product, Category $category, string $audience, string $direction): ?Product
+    {
+        $forward = $direction === 'next';
+        $categoryIds = $category->descendantAndSelfIds();
+
+        // Mirrors applySort()'s 'default' branch, with the id appended so the
+        // ordering is total: without it, rows sharing a sort_order and name
+        // would have no defined neighbour and the arrows could sit still.
+        $cursor = [$product->sort_order, $product->name_ka, $product->id];
+        $comparison = $forward ? '>' : '<';
+        $order = $forward ? 'asc' : 'desc';
+
+        $candidates = Product::query()
+            ->visibleTo($audience)
+            ->whereHas('categories', fn ($q) => $q->whereIn('categories.id', $categoryIds))
+            ->whereRaw("(products.sort_order, products.name_ka, products.id) {$comparison} (?, ?, ?)", $cursor)
+            ->orderBy('sort_order', $order)
+            ->orderBy('name_ka', $order)
+            ->orderBy('id', $order)
+            ->with('categories');
+
+        foreach ($candidates->lazy(25) as $candidate) {
+            if ($candidate->breadcrumbCategory($audience)?->id === $category->id) {
+                return $candidate;
+            }
+        }
+
+        return null;
     }
 
     /** @return array<string, array<int,string>> */

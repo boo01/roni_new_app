@@ -15,6 +15,7 @@ Route::get('/category/{slug}', [CatalogController::class, 'category'])->name('ca
 Route::get('/product/{slug}', [CatalogController::class, 'product'])->name('product.show');
 
 Route::post('/cart/add/{product}', [CartController::class, 'add'])->name('cart.add');
+Route::get('/cart/count', [CartController::class, 'count'])->name('cart.count');
 Route::view('/cart', 'pages.cart')->name('cart.show');
 Route::view('/checkout', 'pages.checkout')->name('checkout.show');
 

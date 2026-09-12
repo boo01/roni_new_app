@@ -6,6 +6,11 @@ set -euo pipefail
 cd /srv/roni5
 export COMPOSE_FILE=docker-compose.prod.yml
 DC="docker compose"
+# Run artisan as the web user (uid 1000 = www-data = host gothem) so files it
+# writes (config cache, storage:link, logs, media conversions) stay writable by
+# php-fpm. Running as root would create root-owned files that break runtime
+# writes (e.g. Livewire uploads failing to generate image conversions → 500).
+ARTISAN="docker compose exec -T --user 1000:1000 app php artisan"
 
 echo "==> Building app image"
 $DC build
@@ -20,19 +25,19 @@ for i in $(seq 1 30); do
 done
 
 echo "==> Migrating"
-$DC exec -T app php artisan migrate --force
+$ARTISAN migrate --force
 
 echo "==> Seeding (idempotent DatabaseSeeder: roles, default group, admin)"
-$DC exec -T app php artisan db:seed --force
+$ARTISAN db:seed --force
 
 echo "==> storage:link"
-$DC exec -T app php artisan storage:link 2>/dev/null || true
+$ARTISAN storage:link 2>/dev/null || true
 
 echo "==> Rebuilding caches"
-$DC exec -T app php artisan optimize:clear
-$DC exec -T app php artisan config:cache
-$DC exec -T app php artisan route:cache
-$DC exec -T app php artisan view:cache
+$ARTISAN optimize:clear
+$ARTISAN config:cache
+$ARTISAN route:cache
+$ARTISAN view:cache
 
 echo "==> Reloading app + workers (picks up new code / clears opcache)"
 $DC restart app worker scheduler

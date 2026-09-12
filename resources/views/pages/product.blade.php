@@ -8,16 +8,47 @@
     @endphp
 
     <section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-10">
-        @php $primaryCat = $product->primaryCategory(); @endphp
         <nav class="text-sm text-ink-muted mb-6" aria-label="Breadcrumb">
             <a href="{{ route('home') }}" class="hover:text-ink">მთავარი</a>
-            @if($primaryCat)
+            @foreach($breadcrumbTrail as $crumb)
                 <span class="mx-1.5 text-ink-faint">/</span>
-                <a href="{{ route('category.show', $primaryCat->slug) }}" class="hover:text-ink">{{ $primaryCat->name_ka }}</a>
-            @endif
+                <a href="{{ route('category.show', $crumb->slug) }}" class="hover:text-ink">{{ $crumb->name_ka }}</a>
+            @endforeach
             <span class="mx-1.5 text-ink-faint">/</span>
             <span class="text-ink">{{ $product->name_ka }}</span>
         </nav>
+
+        @if($prevProduct || $nextProduct)
+            <nav class="flex items-center justify-between gap-3 mb-8" aria-label="პროდუქციის ნავიგაცია">
+                @if($prevProduct)
+                    <a href="{{ route('product.show', $prevProduct->slug) }}" rel="prev"
+                       class="btn-outline group bg-white shadow-card hover:border-slate-300"
+                       title="{{ $prevProduct->name_ka }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                             class="size-4 shrink-0 transition group-hover:-translate-x-0.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                        </svg>
+                        <span>წინა</span>
+                    </a>
+                @else
+                    <span></span>
+                @endif
+
+                @if($nextProduct)
+                    <a href="{{ route('product.show', $nextProduct->slug) }}" rel="next"
+                       class="btn-outline group bg-white shadow-card hover:border-slate-300"
+                       title="{{ $nextProduct->name_ka }}">
+                        <span>შემდეგი</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                             class="size-4 shrink-0 transition group-hover:translate-x-0.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                        </svg>
+                    </a>
+                @else
+                    <span></span>
+                @endif
+            </nav>
+        @endif
     </section>
 
     <section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-16">
@@ -159,11 +190,11 @@
                 </form>
 
                 <dl class="mt-10 border-t border-slate-100 pt-6 space-y-2 text-sm">
-                    @if($product->categories->isNotEmpty())
+                    @if($productCategories->isNotEmpty())
                         <div class="flex justify-between gap-3">
-                            <dt class="text-ink-muted">{{ $product->categories->count() > 1 ? 'კატეგორიები' : 'კატეგორია' }}</dt>
+                            <dt class="text-ink-muted">{{ $productCategories->count() > 1 ? 'კატეგორიები' : 'კატეგორია' }}</dt>
                             <dd class="text-ink text-right">
-                                @foreach($product->categories as $c)
+                                @foreach($productCategories as $c)
                                     <a href="{{ route('category.show', $c->slug) }}" class="hover:underline">{{ $c->name_ka }}</a>@if(!$loop->last), @endif
                                 @endforeach
                             </dd>
